@@ -10,8 +10,9 @@ const Header = () => {
 
   const navigation = [
     { name: 'Home', href: '/' },
-    { name: 'Registration', href: '/registration' },
+    { name: 'Register', href: '/registration' },
     { name: 'Partnership', href: '/partnership' },
+    { name: 'Gallery', href: '/gallery' },
     { name: 'Contact', href: '/contact' },
     { name: 'Admin', href: '/admin' },
   ];
@@ -28,8 +29,8 @@ const Header = () => {
               <Church className="h-6 w-6 text-primary-foreground" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold gradient-text">TLBC Portal</h1>
-              <p className="text-xs text-muted-foreground">The Lord's Brethren Church</p>
+              <h1 className="text-xl font-heading font-bold gradient-text">TLBC 2025</h1>
+              <p className="text-xs text-muted-foreground">Convocation Registration</p>
             </div>
           </Link>
 
