@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { fetchApplications, fetchPartnerships, fetchContactForms } from '@/services/firestore';
+import { fetchApplications, fetchPartnerships } from '@/services/firestore';
 import PageHeader from '@/components/PageHeader';
 import { 
   Users, 
@@ -40,16 +40,11 @@ const AdminDashboard = () => {
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const [regResult, partResult, contactResult] = await Promise.all([
+      const [regResult, partResult] = await Promise.all([
         fetchApplications(),
         fetchPartnerships(),
-        fetchContactForms()
       ]);
-
-      if (regResult.success) setRegistrations(regResult.data);
-      if (partResult.success) setPartnerships(partResult.data);
-      if (contactResult.success) setContactForms(contactResult.data);
-
+      
       toast({
         title: "Data Loaded",
         description: "All submissions have been loaded successfully.",

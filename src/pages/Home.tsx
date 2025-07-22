@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Users, Heart, Music, Award, Camera, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import IMG1 from '/TLBC25.jpg';
+import Home_IMG from '/images/home-img1.jpg';
+import TLBC_VIDEO from '/TLBC24Animation.mp4';
 
 const Home = () => {
   return (
@@ -16,9 +19,11 @@ const Home = () => {
             muted
             playsInline
             className="w-full h-full object-cover"
-            poster="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+             poster={IMG1}
+            // poster="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
           >
-            <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
+            {/* <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" /> */}
+            <source src={TLBC_VIDEO} type="video/mp4" />
           </video>
           {/* Overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/60 to-primary/90" />
@@ -53,7 +58,7 @@ const Home = () => {
                 <Link to="/registration">Register Now</Link>
               </Button>
               <Button size="lg" className="btn-outline text-lg px-10 py-4" asChild>
-                <Link to="/partnership">Become a Partner</Link>
+                <Link to="/partnership">Partner with us</Link>
               </Button>
             </div>
 
@@ -82,15 +87,26 @@ const Home = () => {
                   </svg>
                 </a>
                 <a
-                  href="https://www.instagram.com/elochukwutlbc"
+                  href="https://www.instagram.com/thelordsbrethrenchurchintl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 bg-white/10 hover:bg-secondary rounded-full flex items-center justify-center smooth-transition hover:scale-110"
+                >
+                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+                </a>
+                <a
+                href="https://t.me/TheLordsbrethrenchurchintl"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-12 h-12 bg-white/10 hover:bg-secondary rounded-full flex items-center justify-center smooth-transition hover:scale-110"
                 >
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987c6.62 0 11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.366C4.25 14.747 3.76 13.596 3.76 12.299s.49-2.448 1.366-3.323C6.001 8.001 7.152 7.511 8.449 7.511s2.448.49 3.323 1.365c.875.875 1.366 2.026 1.366 3.323s-.49 2.448-1.366 3.323c-.875.875-2.026 1.366-3.323 1.366zm7.138 0c-1.297 0-2.448-.49-3.323-1.366c-.875-.875-1.365-2.026-1.365-3.323s.49-2.448 1.365-3.323c.875-.875 2.026-1.365 3.323-1.365s2.448.49 3.323 1.365c.875.875 1.366 2.026 1.366 3.323s-.49 2.448-1.366 3.323c-.875.876-2.026 1.366-3.323 1.366z"/>
+                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
                   </svg>
                 </a>
+
               </div>
             </div>
           </div>
@@ -106,13 +122,14 @@ const Home = () => {
                 About TLBC 2025
               </h2>
               <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-                The Lord's Brethren Convocation (TLBC) is an annual glorious homecoming of stakeholders 
-                in The Lord's Brethren Nation where we celebrate our partners, victories, joys, successes, 
-                conquests, coups and feats.
+               The Lord's Brethren Convocation (TLBC) is an annual, glorious homecoming of members, partners, stakeholders, and 
+               nationals of The Lord's Brethren Nation. It's a time to celebrate our victories, joys, successes, 
+               conquests, and achievements.
               </p>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                This year's convocation will feature moments of worship, teachings, impartation, 
-                awards and The Lord's Brethren Family meeting. Don't miss this transformative experience!
+                This year's convocation will feature moments of worship, extended sessions of teaching, impartations, 
+                awards, and The Lord's Brethren Family Meeting. Don't miss this transformative experience—
+                <strong> it's The Lord's Brethren Experience.</strong>
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button className="btn-primary" asChild>
@@ -127,12 +144,12 @@ const Home = () => {
             <div className="relative animate-scale-in">
               <div className="event-card">
                 <img 
-                  src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" 
+                  src={Home_IMG} 
                   alt="TLBC Event" 
                   className="w-full h-60 sm:h-80 object-cover rounded-xl mb-6"
                 />
                 <h3 className="text-xl sm:text-2xl font-heading font-bold mb-4">Our Annual Homecoming</h3>
-                <p className="text-muted-foreground">An amazing spiritual experience awaits you.</p>
+                <p className="text-muted-foreground">An amazing experience awaits you.</p>
               </div>
             </div>
           </div>
@@ -145,16 +162,17 @@ const Home = () => {
           <div className="text-center mb-16">
             <h2 className="section-title gradient-text">What to Expect</h2>
             <p className="section-subtitle">
-              Experience worship, fellowship, and spiritual transformation
+              Experience the ministry of the word, The Lord's Brethren songs, intense prayer sessions, praise and worship sessions, 
+              fellowship, and The Lords Brethren Family Meeting.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { icon: Music, title: "Worship Sessions", desc: "Powerful praise and worship" },
-              { icon: Heart, title: "Prayer Time", desc: "Deep spiritual connection" },
-              { icon: Users, title: "Fellowship", desc: "Beautiful community moments" },
-              { icon: Award, title: "Award Ceremony", desc: "Celebrating achievements" }
+              { icon: Music, title: "The Lord's Brethren songs", desc: "Our unique family songs" },
+              { icon: Users, title: "Fellowship", desc: "Beautiful moments of fellowshiiping together" },
+              { icon: Heart, title: "The Lords Brethren Family Meeting", desc: "Our family meeting comprising of many activities" },
+              { icon: Award, title: "Award Ceremony", desc: "Celebrating the outstanding achievements of our Leaders" }
             ].map((item, index) => (
               <div key={item.title} className="event-highlight animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
                 <item.icon className="w-12 h-12 text-secondary mx-auto mb-4" />
@@ -174,10 +192,10 @@ const Home = () => {
               Don't Miss Out!
             </h2>
             <p className="text-xl text-white/90 mb-12 max-w-3xl mx-auto">
-              Register now for TLBC 2025 and be part of this life-changing spiritual experience.
+              Register now for TLBC 2025 and be part of this life-changing experience.
             </p>
             <Button size="lg" className="btn-secondary text-xl px-12 py-6" asChild>
-              <Link to="/registration">Secure Your Spot</Link>
+              <Link to="/registration">Click here to Register</Link>
             </Button>
           </div>
         </div>

@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from "react-router-dom";
+import { submitRegistrationForm } from "@/services/firestore";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -7,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { submitRegistrationForm } from '@/services/firestore';
 import PageHeader from '@/components/PageHeader';
 import FormCard from '@/components/FormCard';
 import { Loader2, CheckCircle } from 'lucide-react';
@@ -15,16 +16,13 @@ import { Loader2, CheckCircle } from 'lucide-react';
 const registrationSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  gender: z.string().min(2, 'Gender must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
   phone: z.string().min(10, 'Please enter a valid phone number'),
-  address: z.string().min(5, 'Please enter your complete address'),
-  city: z.string().min(2, 'Please enter your city'),
-  dateOfBirth: z.string().min(1, 'Please enter your date of birth'),
-  emergencyContact: z.string().min(2, 'Please enter an emergency contact'),
-  emergencyPhone: z.string().min(10, 'Please enter emergency contact phone'),
-  previousChurch: z.string().optional(),
-  ministryInterests: z.string().optional(),
-  testimony: z.string().optional(),
+  address: z.string().min(3, 'Please enter your complete address'),
+  category: z.string().min(2, 'Category must be at least 2 characters'),
+  zone: z.string().min(3, 'Zone must be at least 3 characters'),
+  church: z.string().optional(),
 });
 
 type RegistrationFormData = z.infer<typeof registrationSchema>;
@@ -39,35 +37,69 @@ const Registration = () => {
     defaultValues: {
       firstName: '',
       lastName: '',
+      gender: '',
       email: '',
       phone: '',
       address: '',
-      city: '',
-      dateOfBirth: '',
-      emergencyContact: '',
-      emergencyPhone: '',
-      previousChurch: '',
-      ministryInterests: '',
-      testimony: '',
+      category: '',
+      zone: '',
+      church: '',
     },
   });
+
+// Watch the category field to handle conditional rendering
+  const categoryValue = form.watch('category');
+  const zoneValue = form.watch('zone');
+
+  const churchOptions = {
+    'TLBC Awka': 'TLBC Awka',
+    'TLBC Ekwulobia': 'TLBC Ekwulobia',
+    'TLBC Ihiala': 'TLBC Ihiala', 
+    'TLBC Nnewi': 'TLBC Nnewi', 
+    'TLBC Onitsha': 'TLBC Onitsha', 
+    'TLBCM Agulu': 'TLBCM Agulu', 
+    'TLBCM Igbariam': 'TLBCM Igbariam',
+    'TLBCM Uli': 'TLBCM Uli',
+    'TLBCM FUTO': 'TLBCM FUTO', 
+    'TLBCM IMSU': 'TLBCM IMSU', 
+    'TLBCM Mbaukwu': 'TLBCM Mbaukwu', 
+    'TLBCM Anspoly Mgbakwu': 'TLBCM Anspoly Mgbakwu',
+    'TLBCM NAU': 'TLBCM NAU',
+    'TLBCM Nekede': 'TLBCM Nekede', 
+    'TLBCM Oko': 'TLBCM Oko', 
+    'TLBCM NAU Okofia': 'TLBCM NAU Okofia',
+    'TLBCM UNILAG': 'TLBCM UNILAG', 
+    'TLTN Awka': 'TLTN Awka', 
+    'TLTN Agulu': 'TLTN Agulu', 
+  };
+
+  // Reset zone when category changes
+  useEffect(() => {
+    if (categoryValue) {
+      form.setValue('zone', '');
+      form.setValue('church', '');
+    }
+  }, [categoryValue, form]);
+
+  // Reset church when zone changes
+  useEffect(() => {
+    if (zoneValue) {
+      form.setValue('church', '');
+    }
+  }, [zoneValue, form]);
 
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true);
     
     try {
       const result = await submitRegistrationForm(data);
-      
-      if (result.success) {
-        setIsSubmitted(true);
         toast({
           title: "Registration Successful!",
-          description: "Thank you for joining our church community. We'll be in touch soon.",
+          description: "Thank you for Registering. We'll be in touch soon.",
+          variant: "success",
         });
+        setIsSubmitted(true);
         form.reset();
-      } else {
-        throw new Error(result.error);
-      }
     } catch (error) {
       toast({
         title: "Registration Failed",
@@ -91,14 +123,13 @@ const Registration = () => {
             <div className="text-center py-8">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <p className="text-lg mb-6">
-                Your registration has been successfully submitted. A member of our pastoral team 
-                will contact you within 2-3 business days to welcome you personally.
+                Your registration has been successfully submitted. <br/>Blessings!
               </p>
               <Button 
                 onClick={() => setIsSubmitted(false)}
                 className="w-full"
               >
-                Submit Another Registration
+                Close
               </Button>
             </div>
           </FormCard>
@@ -110,8 +141,8 @@ const Registration = () => {
   return (
     <div className="min-h-screen py-12">
       <PageHeader
-        title="Church Registration"
-        description="Join our church community and begin your spiritual journey with us"
+        title="TLBC 2025 Registration Form"
+        description="Fill out the form below with your accurate details to register for TLBC 2025"
       />
 
       <div className="container mx-auto px-4 max-w-2xl">
@@ -121,7 +152,7 @@ const Registration = () => {
         >
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Personal Information */}
+            
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-foreground">Personal Information</h3>
                 
@@ -131,12 +162,13 @@ const Registration = () => {
                     name="firstName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>First Name *</FormLabel>
+                        <FormLabel>First Name <span className='text-red-500'>*</span></FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="Enter your first name" 
                             {...field} 
                             className="form-focus"
+                            required
                           />
                         </FormControl>
                         <FormMessage />
@@ -149,12 +181,13 @@ const Registration = () => {
                     name="lastName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Last Name *</FormLabel>
+                        <FormLabel>Last Name <span className='text-red-500'>*</span></FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="Enter your last name" 
                             {...field} 
                             className="form-focus"
+                            required
                           />
                         </FormControl>
                         <FormMessage />
@@ -163,18 +196,43 @@ const Registration = () => {
                   />
                 </div>
 
+                 <FormField
+                  control={form.control}
+                  name="gender"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Gender <span className='text-red-500'>*</span></FormLabel>
+                      <FormControl>
+                        <select 
+                          {...field} 
+                          className="form-focus w-full border rounded px-3 py-2"
+                          required
+                        >
+                        <option value="" disabled>
+                          Select your gender
+                        </option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                      </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address *</FormLabel>
+                      <FormLabel>Email Address <span className='text-red-500'>*</span></FormLabel>
                       <FormControl>
                         <Input 
                           type="email" 
                           placeholder="Enter your email address" 
                           {...field} 
                           className="form-focus"
+                          required
                         />
                       </FormControl>
                       <FormMessage />
@@ -187,31 +245,14 @@ const Registration = () => {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone Number *</FormLabel>
+                      <FormLabel>Phone Number <span className='text-red-500'>*</span></FormLabel>
                       <FormControl>
                         <Input 
                           type="tel" 
                           placeholder="Enter your phone number" 
                           {...field} 
                           className="form-focus"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="dateOfBirth"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Date of Birth *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="date" 
-                          {...field} 
-                          className="form-focus"
+                          required
                         />
                       </FormControl>
                       <FormMessage />
@@ -222,146 +263,127 @@ const Registration = () => {
 
               {/* Contact Information */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground">Address Information</h3>
+                <h3 className="text-lg font-semibold text-foreground">Contact Information</h3>
                 
                 <FormField
                   control={form.control}
                   name="address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Street Address *</FormLabel>
+                      <FormLabel>Address <span className='text-red-500'>*</span></FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Enter your street address" 
+                          type="text" 
+                          placeholder="Enter your address" 
                           {...field} 
                           className="form-focus"
+                          required
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>City *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Enter your city" 
-                          {...field} 
-                          className="form-focus"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Emergency Contact */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground">Emergency Contact</h3>
                 
-                <FormField
+                 <FormField
                   control={form.control}
-                  name="emergencyContact"
+                  name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Emergency Contact Name *</FormLabel>
+                      <FormLabel> Are you a member of The Lord's Brethren Church International? 
+                        <span className='text-red-500'>*</span></FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Enter emergency contact name" 
+                        <select 
                           {...field} 
-                          className="form-focus"
-                        />
+                          className="form-focus w-full border rounded px-3 py-2"
+                        >
+                        <option value="" disabled>
+                          Choose an option
+                        </option>
+                        <option value="Member">Yes</option>
+                        <option value="Invitee">No</option>
+                      </select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
-                  )}
+                  )} 
                 />
 
-                <FormField
-                  control={form.control}
-                  name="emergencyPhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Emergency Contact Phone *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="tel" 
-                          placeholder="Enter emergency contact phone" 
-                          {...field} 
-                          className="form-focus"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                   {/* Conditional Church/Zone Field */}
+                {categoryValue && (
+                  <FormField
+                    control={form.control}
+                    name="zone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {categoryValue === "Member" 
+                            ? "Please select your church or zone" 
+                            : "What is the name of your Church/Ministry?"
+                          }
+                          <span className='text-red-500'>*</span>
+                        </FormLabel>
+                        <FormControl>
+                          {categoryValue === "Member" ? (
+                            <select 
+                              {...field} 
+                              className="form-focus w-full border rounded px-3 py-2"
+                            >
+                              <option value="" disabled>
+                                Select your zone
+                              </option>
+                              <option value="Awka zone">Awka zone</option>
+                              <option value="Nnewi zone">Nnewi zone</option>
+                              <option value="Owerri zone">Owerri zone</option>
+                              <option value="Ekwulobia zone">Ekwulobia zone</option>
+                              <option value="Onitsha zone">Onitsha zone</option>
+                            </select>
+                          ) : (
+                            <Input 
+                              type="text" 
+                              placeholder="What is the name of your Church?" 
+                              {...field} 
+                              className="form-focus"
+                            />
+                          )}
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
-              {/* Additional Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground">Additional Information</h3>
-                
-                <FormField
-                  control={form.control}
-                  name="previousChurch"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Previous Church (Optional)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Enter your previous church name" 
-                          {...field} 
-                          className="form-focus"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="ministryInterests"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ministry Interests (Optional)</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Tell us about your ministry interests or areas where you'd like to serve"
-                          rows={3}
-                          {...field} 
-                          className="form-focus resize-none"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="testimony"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Personal Testimony (Optional)</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Share your faith journey or testimony with us"
-                          rows={4}
-                          {...field} 
-                          className="form-focus resize-none"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                   {/* Church Field - Only for Members who have selected a zone */}
+                {categoryValue === "Member" && zoneValue && (
+                  <FormField
+                    control={form.control}
+                    name="church"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Select your Church
+                          <span className='text-red-500'>*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <select 
+                            {...field} 
+                            className="form-focus w-full border rounded px-3 py-2"
+                          >
+                            <option value="" disabled>
+                              Select your church
+                            </option>
+                            {Object.entries(churchOptions).map(([displayName, value]) => (
+                              <option key={value} value={displayName}>
+                                {displayName}
+                              </option>
+                            ))}
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
 
               <Button 

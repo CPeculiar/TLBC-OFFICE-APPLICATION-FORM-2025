@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Church } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import Logo from '/logo2.png'; 
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,12 +26,16 @@ const Header = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg primary-gradient glow-shadow group-hover:scale-105 smooth-transition">
-              <Church className="h-6 w-6 text-primary-foreground" />
+            <div className="flex h-20 w-20 items-center justify-center group-hover:scale-105 smooth-transition">
+              <img 
+                src={Logo} 
+                alt="TLBC Logo" 
+                className="h-20 w-20 object-contain"
+              />
             </div>
             <div className="hidden sm:block">
               <h1 className="text-xl font-heading font-bold gradient-text">TLBC 2025</h1>
-              <p className="text-xs text-muted-foreground">Convocation Registration</p>
+              <p className="text-xs text-muted-foreground">The Lord's Brethren Convocation'25</p>
             </div>
           </Link>
 
