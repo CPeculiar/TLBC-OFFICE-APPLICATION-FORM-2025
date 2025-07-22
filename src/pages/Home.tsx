@@ -16,9 +16,9 @@ const Home = () => {
             muted
             playsInline
             className="w-full h-full object-cover"
-            poster="/images/_MG_8912.jpg"
+            poster="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
           >
-            <source src="/images/TLBC24Animation.mp4" type="video/mp4" />
+            <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
           </video>
           {/* Overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/60 to-primary/90" />
@@ -30,20 +30,20 @@ const Home = () => {
             <p className="text-lg md:text-xl mb-4 text-secondary font-medium">
               The Lord's Brethren Church International Presents
             </p>
-            <h1 className="text-6xl md:text-8xl font-display font-bold mb-8 leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-display font-bold mb-8 leading-tight">
               The Lord's Brethren 
               <span className="block text-secondary">Convocation 2025</span>
             </h1>
             
             {/* Event Details */}
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-8 mb-12 text-lg">
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-8 mb-12 text-base sm:text-lg">
               <div className="flex items-center gap-3">
-                <Calendar className="w-6 h-6 text-secondary" />
-                <span>31st Aug - 4th Sept, 2025</span>
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-secondary" />
+                <span className="text-center sm:text-left">31st Aug - 4th Sept, 2025</span>
               </div>
               <div className="flex items-center gap-3">
-                <MapPin className="w-6 h-6 text-secondary" />
-                <span>Bishop Crowther Retreat Center, MCC Onitsha</span>
+                <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-secondary" />
+                <span className="text-center sm:text-left">Bishop Crowther Retreat Center, MCC Onitsha</span>
               </div>
             </div>
 
@@ -127,11 +127,11 @@ const Home = () => {
             <div className="relative animate-scale-in">
               <div className="event-card">
                 <img 
-                  src="/images/_MG_8912.jpg" 
+                  src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" 
                   alt="TLBC Event" 
-                  className="w-full h-80 object-cover rounded-xl mb-6"
+                  className="w-full h-60 sm:h-80 object-cover rounded-xl mb-6"
                 />
-                <h3 className="text-2xl font-heading font-bold mb-4">Our Annual Homecoming</h3>
+                <h3 className="text-xl sm:text-2xl font-heading font-bold mb-4">Our Annual Homecoming</h3>
                 <p className="text-muted-foreground">An amazing spiritual experience awaits you.</p>
               </div>
             </div>

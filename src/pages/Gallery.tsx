@@ -14,15 +14,15 @@ const Gallery = () => {
       theme: "The Law and The Prophets",
       description: "It was a truly remarkable experience for us at The Convocation, held at Kingdom City Prayer Camp, Awka, Anambra State. The event was a great success, and we were deeply blessed — we didn't return the same.",
       images: [
-        "/images/_MG_8912.jpg",
-        "/images/_MG_7548.jpg",
-        "/images/_MG_8003.jpg",
-        "/images/_MG_8410.jpg",
-        "/images/_MG_75482.jpg",
-        "/images/_MG_9494.jpg",
-        "/images/image54.jpg",
-        "/images/_MG_8412.jpg",
-        "/images/_MG_1546.jpg"
+        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1511632765486-a01980e01a18?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1415604934674-561df9abf539?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1445991842772-097fea258e7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1559223607-b4d0555ae227?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
       ]
     },
     {
@@ -30,12 +30,12 @@ const Gallery = () => {
       theme: "Immortality", 
       description: "The Convocation held at Faithful Camp Uke, Anambra State and it recorded great success. We received teachings on IMMORTALITY and we were blessed.",
       images: [
-        "/images/_MG_8912.jpg",
-        "/images/_MG_7548.jpg",
-        "/images/_MG_8003.jpg",
-        "/images/_MG_8410.jpg",
-        "/images/_MG_75482.jpg",
-        "/images/_MG_9494.jpg"
+        "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
       ]
     },
     {
@@ -43,12 +43,12 @@ const Gallery = () => {
       theme: "The City of God",
       description: "Reverend Elochukwu Udegbunam took us on the subject called The City of God and we were blessed. The Convocation recorded great success. Glory to God.",
       images: [
-        "/images/_MG_8912.jpg",
-        "/images/_MG_7548.jpg",
-        "/images/_MG_8003.jpg",
-        "/images/_MG_8410.jpg",
-        "/images/_MG_75482.jpg",
-        "/images/_MG_9494.jpg"
+        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1490818387583-1baba5e638af?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
       ]
     }
   ];
@@ -114,7 +114,7 @@ const Gallery = () => {
                     <img
                       src={image}
                       alt={`TLBC ${section.year} - Image ${imageIndex + 1}`}
-                      className="w-full h-64 object-cover"
+                      className="w-full h-48 sm:h-56 md:h-64 object-cover"
                       loading="lazy"
                     />
                     <div className="gallery-overlay">

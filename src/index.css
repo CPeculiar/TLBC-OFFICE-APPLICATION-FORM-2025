@@ -323,7 +323,7 @@
 
   /* Gallery Grid */
   .gallery-grid {
-    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8;
+    @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8;
   }
 
   .gallery-item {
@@ -360,5 +360,62 @@
 
   .form-error {
     @apply text-destructive text-sm mt-1;
+  }
+
+  /* Responsive design adjustments */
+  @media (max-width: 768px) {
+    .hero-content h1 {
+      @apply text-3xl sm:text-4xl;
+    }
+    
+    .section-title {
+      @apply text-2xl sm:text-3xl;
+    }
+    
+    .btn-primary, .btn-secondary, .btn-outline {
+      @apply text-sm sm:text-base px-4 py-2 sm:px-6 sm:py-3;
+    }
+    
+    .gallery-grid {
+      @apply grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4;
+    }
+    
+    .gallery-item {
+      @apply rounded-lg;
+    }
+    
+    .event-card {
+      @apply p-4 sm:p-6;
+    }
+    
+    .section-container {
+      @apply py-12 sm:py-16;
+    }
+    
+    .event-highlight {
+      @apply p-4 sm:p-6;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-content h1 {
+      @apply text-2xl leading-tight;
+    }
+    
+    .container {
+      @apply px-3;
+    }
+    
+    .section-title {
+      @apply text-xl;
+    }
+    
+    .gallery-grid {
+      @apply grid-cols-1 gap-3;
+    }
+    
+    .btn-primary, .btn-secondary, .btn-outline {
+      @apply px-3 py-2 text-sm;
+    }
   }
 }
