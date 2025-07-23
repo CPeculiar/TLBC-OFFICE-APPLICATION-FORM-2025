@@ -73,23 +73,25 @@ const Partnership = () => {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen py-12">
+      <div className="min-h-screen py-6 sm:py-12 px-4">
         <PageHeader
-          title="Application Submitted!"
-          description="Thank you for your interest in partnering with TLBC"
+          title="Form Submitted!"
+          description="Thank you for your partnership with us"
         />
-        <div className="container mx-auto px-4 max-w-md">
+        <div className="container mx-auto max-w-sm sm:max-w-md">
           <FormCard title="Thank You">
-            <div className="text-center py-8">
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <p className="text-lg mb-6">
-                Your partnership details has been successfully submitted. <br/> Blessings!.
+            <div className="text-center py-6 sm:py-8 px-2">
+              <CheckCircle className="w-12 h-12 sm:w-16 sm:h-16 text-green-500 mx-auto mb-4" />
+              <p className="text-sm sm:text-lg mb-6 leading-relaxed">
+                Your partnership details has been successfully submitted.{' '}
+                <br className="hidden sm:block" />
+                <span className="block sm:inline mt-1 sm:mt-0">Blessings!</span>
               </p>
               <Button 
                 onClick={() => setIsSubmitted(false)}
-                className="w-full"
+                className="w-full max-w-xs mx-auto text-sm sm:text-base py-2 sm:py-3"
               >
-                close
+                Close
               </Button>
             </div>
           </FormCard>
@@ -99,13 +101,13 @@ const Partnership = () => {
   }
 
   return (
-    <div className="min-h-screen py-12">
+    <div className="min-h-screen py-6 sm:py-12 px-4">
       <PageHeader
         title="TLBC 2025 Partnership Form"
         description="Fill out the form below with your accurate details to partner for TLBC 2025"
       />
 
-      <div className="container mx-auto px-4 max-w-2xl">
+      <div className="container mx-auto max-w-full sm:max-w-2xl">
         <FormCard
           title="Partnership Form"
           description="Please provide us with your accurate information below"
@@ -114,67 +116,79 @@ const Partnership = () => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Personal Information */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground">Personal Information</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground break-words">
+                  Personal Information
+                </h3>
                 
-                <FormField
-                  control={form.control}
-                  name="firstName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>First Name <span className='text-red-500'>*</span></FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Enter your First name" 
-                          {...field} 
-                          className="form-focus"
-                          required
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm sm:text-base">
+                          First Name <span className='text-red-500'>*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Enter your first name" 
+                            {...field} 
+                            className="form-focus w-full text-sm sm:text-base py-2 sm:py-3"
+                            required
+                          />
+                        </FormControl>
+                        <FormMessage className="text-xs sm:text-sm" />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Name <span className='text-red-500'>*</span></FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Enter your Last name" 
-                          {...field} 
-                          className="form-focus"
-                          required
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm sm:text-base">
+                          Last Name <span className='text-red-500'>*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Enter your last name" 
+                            {...field} 
+                            className="form-focus w-full text-sm sm:text-base py-2 sm:py-3"
+                            required
+                          />
+                        </FormControl>
+                        <FormMessage className="text-xs sm:text-sm" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
               {/* Contact Information */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground">Contact Information</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground break-words">
+                  Contact Information
+                </h3>
                 
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address <span className='text-red-500'>*</span></FormLabel>
+                      <FormLabel className="text-sm sm:text-base">
+                        Email Address <span className='text-red-500'>*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input 
                           type="email" 
-                          placeholder="Enter email address" 
+                          placeholder="Enter email" 
                           {...field} 
-                          className="form-focus"
+                          className="form-focus w-full text-sm sm:text-base py-2 sm:py-3"
                           required
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs sm:text-sm" />
                     </FormItem>
                   )}
                 />
@@ -184,17 +198,19 @@ const Partnership = () => {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone Number <span className='text-red-500'>*</span></FormLabel>
+                      <FormLabel className="text-sm sm:text-base">
+                        Phone Number <span className='text-red-500'>*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input 
                           type="tel" 
-                          placeholder="Enter your phone number" 
+                          placeholder="Enter your phone num" 
                           {...field} 
-                          className="form-focus"
+                          className="form-focus w-full text-sm sm:text-base py-2 sm:py-3"
                           required
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs sm:text-sm" />
                     </FormItem>
                   )}
                 />
@@ -204,52 +220,58 @@ const Partnership = () => {
                   name="address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Address <span className='text-red-500'>*</span></FormLabel>
+                      <FormLabel className="text-sm sm:text-base">
+                        Address <span className='text-red-500'>*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="Enter your address" 
                           {...field} 
-                          className="form-focus"
+                          className="form-focus w-full text-sm sm:text-base py-2 sm:py-3"
                           required
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs sm:text-sm" />
                     </FormItem>
                   )}
                 />
 
-              <FormField
-                  control={form.control}
-                  name="church"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Church/Ministry </FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Enter your the name of your church" 
-                          {...field} 
-                          className="form-focus"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormField
+                    control={form.control}
+                    name="church"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm sm:text-base">
+                          Church/Ministry
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Enter the name of your church" 
+                            {...field} 
+                            className="form-focus w-full text-sm sm:text-base py-2 sm:py-3"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-xs sm:text-sm" />
+                      </FormItem>
+                    )}
+                  />
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full primary-gradient glow-shadow" 
+                className="w-full primary-gradient glow-shadow text-sm sm:text-base py-3 sm:py-4 px-4 min-h-[48px] sm:min-h-[52px]" 
                 size="lg"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin flex-shrink-0" />
+                    <span className="truncate">Processing...</span>
                   </>
                 ) : (
-                  'Submit & Proceed to Payment'
+                  <span className="break-words text-center leading-tight">
+                    Submit
+                  </span>
                 )}
               </Button>
             </form>

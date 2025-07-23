@@ -15,7 +15,7 @@ const Header = () => {
     { name: 'Partnership', href: '/partnership' },
     { name: 'Gallery', href: '/gallery' },
     { name: 'Contact', href: '/contact' },
-    { name: 'Admin', href: '/admin' },
+    // { name: 'Admin', href: '/admin' },
   ];
 
   const isActive = (href: string) => location.pathname === href;

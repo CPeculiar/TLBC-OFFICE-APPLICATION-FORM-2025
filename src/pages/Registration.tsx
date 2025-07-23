@@ -113,21 +113,26 @@ const Registration = () => {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen py-12">
-        <PageHeader
-          title="Registration Complete!"
-          description="Welcome to The Lord's Brethren Church family"
-        />
-        <div className="container mx-auto px-4 max-w-md">
+      <div className="min-h-screen py-4 sm:py-6 md:py-12 px-3 sm:px-4 md:px-6">
+        <div className="w-full max-w-full overflow-hidden">
+          <PageHeader
+            title="Registration Complete!"
+            description="Welcome to The Lord's Brethren Church family"
+          />
+        </div>
+        <div className="container mx-auto max-w-xs sm:max-w-md w-full px-2 sm:px-4">
           <FormCard title="Thank You">
-            <div className="text-center py-8">
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <p className="text-lg mb-6">
-                Your registration has been successfully submitted. <br/>Blessings!
+            <div className="text-center py-6 sm:py-8 px-4">
+              <CheckCircle className="w-12 h-12 sm:w-16 sm:h-16 text-green-500 mx-auto mb-4" />
+              <p className="text-base sm:text-lg mb-4 sm:mb-6 leading-relaxed break-words">
+                Your registration has been successfully submitted. 
+                <br className="hidden sm:inline"/>
+                <span className="block sm:inline"> Blessings!</span>
               </p>
               <Button 
                 onClick={() => setIsSubmitted(false)}
-                className="w-full"
+                className="w-full max-w-full text-sm sm:text-base py-3 sm:py-3 min-h-[44px] sm:min-h-[48px]"
+                size="default"
               >
                 Close
               </Button>
@@ -139,39 +144,43 @@ const Registration = () => {
   }
 
   return (
-    <div className="min-h-screen py-12">
-      <PageHeader
-        title="TLBC 2025 Registration Form"
-        description="Fill out the form below with your accurate details to register for TLBC 2025"
-      />
+    <div className="min-h-screen py-4 sm:py-6 md:py-12 px-3 sm:px-4 md:px-6">
+      <div className="w-full max-w-full overflow-hidden">
+        <PageHeader
+          title="TLBC 2025 Registration Form"
+          description="Fill out the form below with your accurate details to register for TLBC 2025"
+        />
+      </div>
 
-      <div className="container mx-auto px-4 max-w-2xl">
+      <div className="container mx-auto max-w-full sm:max-w-xl md:max-w-2xl w-full px-2 sm:px-4">
         <FormCard
           title="Registration Form"
           description="Please fill out all required fields to complete your church registration"
         >
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
             
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground">Personal Information</h3>
+              <div className="space-y-3 sm:space-y-4">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground break-words">Personal Information</h3>
                 
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <FormField
                     control={form.control}
                     name="firstName"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Name <span className='text-red-500'>*</span></FormLabel>
+                      <FormItem className="w-full">
+                        <FormLabel className="text-sm sm:text-base break-words">
+                          First Name <span className='text-red-500'>*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="Enter your first name" 
+                            placeholder="Enter first name" 
                             {...field} 
-                            className="form-focus"
+                            className="form-focus w-full min-w-0 text-sm sm:text-base py-2.5 sm:py-3 px-2 sm:px-3"
                             required
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-xs sm:text-sm break-words" />
                       </FormItem>
                     )}
                   />
@@ -180,17 +189,19 @@ const Registration = () => {
                     control={form.control}
                     name="lastName"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Last Name <span className='text-red-500'>*</span></FormLabel>
+                      <FormItem className="w-full">
+                        <FormLabel className="text-sm sm:text-base break-words">
+                          Last Name <span className='text-red-500'>*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="Enter your last name" 
+                            placeholder="Enter last name" 
                             {...field} 
-                            className="form-focus"
+                            className="form-focus w-full min-w-0 text-sm sm:text-base py-2.5 sm:py-3 px-2 sm:px-3"
                             required
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-xs sm:text-sm break-words" />
                       </FormItem>
                     )}
                   />
@@ -200,12 +211,14 @@ const Registration = () => {
                   control={form.control}
                   name="gender"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Gender <span className='text-red-500'>*</span></FormLabel>
+                    <FormItem className="w-full">
+                      <FormLabel className="text-sm sm:text-base break-words">
+                        Gender <span className='text-red-500'>*</span>
+                      </FormLabel>
                       <FormControl>
                         <select 
                           {...field} 
-                          className="form-focus w-full border rounded px-3 py-2"
+                          className="form-focus w-full min-w-0 border rounded px-2 sm:px-3 py-2.5 sm:py-3 text-sm sm:text-base bg-background"
                           required
                         >
                         <option value="" disabled>
@@ -215,7 +228,7 @@ const Registration = () => {
                         <option value="female">Female</option>
                       </select>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs sm:text-sm break-words" />
                     </FormItem>
                   )}
                 />
@@ -224,18 +237,20 @@ const Registration = () => {
                   control={form.control}
                   name="email"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address <span className='text-red-500'>*</span></FormLabel>
+                    <FormItem className="w-full">
+                      <FormLabel className="text-sm sm:text-base break-words">
+                        Email Address <span className='text-red-500'>*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input 
                           type="email" 
-                          placeholder="Enter your email address" 
+                          placeholder="Enter email" 
                           {...field} 
-                          className="form-focus"
+                          className="form-focus w-full min-w-0 text-sm sm:text-base py-2.5 sm:py-3 px-2 sm:px-3"
                           required
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs sm:text-sm break-words" />
                     </FormItem>
                   )}
                 />
@@ -244,43 +259,47 @@ const Registration = () => {
                   control={form.control}
                   name="phone"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number <span className='text-red-500'>*</span></FormLabel>
+                    <FormItem className="w-full">
+                      <FormLabel className="text-sm sm:text-base break-words">
+                        Phone <span className='text-red-500'>*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input 
                           type="tel" 
-                          placeholder="Enter your phone number" 
+                          placeholder="Enter phone num" 
                           {...field} 
-                          className="form-focus"
+                          className="form-focus w-full min-w-0 text-sm sm:text-base py-2.5 sm:py-3 px-2 sm:px-3"
                           required
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs sm:text-sm break-words" />
                     </FormItem>
                   )}
                 />
               </div>
 
               {/* Contact Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground">Contact Information</h3>
+              <div className="space-y-3 sm:space-y-4">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground break-words">Contact Information</h3>
                 
                 <FormField
                   control={form.control}
                   name="address"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Address <span className='text-red-500'>*</span></FormLabel>
+                    <FormItem className="w-full">
+                      <FormLabel className="text-sm sm:text-base break-words">
+                        Address <span className='text-red-500'>*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input 
                           type="text" 
                           placeholder="Enter your address" 
                           {...field} 
-                          className="form-focus"
+                          className="form-focus w-full min-w-0 text-sm sm:text-base py-2.5 sm:py-3 px-2 sm:px-3"
                           required
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs sm:text-sm break-words" />
                     </FormItem>
                   )}
                 />
@@ -289,13 +308,15 @@ const Registration = () => {
                   control={form.control}
                   name="category"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel> Are you a member of The Lord's Brethren Church International? 
-                        <span className='text-red-500'>*</span></FormLabel>
+                    <FormItem className="w-full">
+                      <FormLabel className="text-sm sm:text-base break-words leading-relaxed"> 
+                       Are you a member of The Lord's Brethren Church Int'l? <span className='text-red-500'>*</span>
+                       
+                      </FormLabel>
                       <FormControl>
                         <select 
                           {...field} 
-                          className="form-focus w-full border rounded px-3 py-2"
+                          className="form-focus w-full min-w-0 border rounded px-2 sm:px-3 py-2.5 sm:py-3 text-sm sm:text-base bg-background"
                         >
                         <option value="" disabled>
                           Choose an option
@@ -304,7 +325,7 @@ const Registration = () => {
                         <option value="Invitee">No</option>
                       </select>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs sm:text-sm break-words" />
                     </FormItem>
                   )} 
                 />
@@ -315,8 +336,8 @@ const Registration = () => {
                     control={form.control}
                     name="zone"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
+                      <FormItem className="w-full">
+                        <FormLabel className="text-sm sm:text-base break-words leading-relaxed">
                           {categoryValue === "Member" 
                             ? "Please select your church or zone" 
                             : "What is the name of your Church/Ministry?"
@@ -327,7 +348,7 @@ const Registration = () => {
                           {categoryValue === "Member" ? (
                             <select 
                               {...field} 
-                              className="form-focus w-full border rounded px-3 py-2"
+                              className="form-focus w-full min-w-0 border rounded px-2 sm:px-3 py-2.5 sm:py-3 text-sm sm:text-base bg-background"
                             >
                               <option value="" disabled>
                                 Select your zone
@@ -341,13 +362,13 @@ const Registration = () => {
                           ) : (
                             <Input 
                               type="text" 
-                              placeholder="What is the name of your Church?" 
+                              placeholder="Church name" 
                               {...field} 
-                              className="form-focus"
+                              className="form-focus w-full min-w-0 text-sm sm:text-base py-2.5 sm:py-3 px-2 sm:px-3"
                             />
                           )}
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-xs sm:text-sm break-words" />
                       </FormItem>
                     )}
                   />
@@ -359,15 +380,15 @@ const Registration = () => {
                     control={form.control}
                     name="church"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
+                      <FormItem className="w-full">
+                        <FormLabel className="text-sm sm:text-base break-words">
                           Select your Church
                           <span className='text-red-500'>*</span>
                         </FormLabel>
                         <FormControl>
                           <select 
                             {...field} 
-                            className="form-focus w-full border rounded px-3 py-2"
+                            className="form-focus w-full min-w-0 border rounded px-2 sm:px-3 py-2.5 sm:py-3 text-sm sm:text-base bg-background"
                           >
                             <option value="" disabled>
                               Select your church
@@ -379,7 +400,7 @@ const Registration = () => {
                             ))}
                           </select>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-xs sm:text-sm break-words" />
                       </FormItem>
                     )}
                   />
@@ -388,17 +409,17 @@ const Registration = () => {
 
               <Button 
                 type="submit" 
-                className="w-full primary-gradient glow-shadow" 
+                className="w-full max-w-full primary-gradient glow-shadow text-sm sm:text-base py-3 sm:py-4 px-3 sm:px-6 min-h-[44px] sm:min-h-[48px]" 
                 size="lg"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting Registration...
-                  </>
+                  <div className="flex items-center justify-center gap-1.5 sm:gap-2 w-full">
+                    <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin flex-shrink-0" />
+                    <span className="text-xs sm:text-sm text-center truncate">Registering...</span>
+                  </div>
                 ) : (
-                  'Complete Registration'
+                  <span className="text-sm sm:text-base text-center">Register</span>
                 )}
               </Button>
             </form>

@@ -21,6 +21,10 @@ interface ApplicationData {
   [key: string]: any;
   submittedAt?: Date;
 }
+interface PartnershipFormData {
+  [key: string]: any;
+  submittedAt?: Date;
+}
 
 interface ApplicationWithId extends ApplicationData {
   id: string;
@@ -40,7 +44,7 @@ export const submitRegistrationForm = async (formData: ApplicationData): Promise
   }
 };
 
-export const submitPartnershipForm = async (formData: ApplicationData): Promise<string> => {
+export const submitPartnershipForm = async (formData: PartnershipFormData): Promise<string> => {
   try {
     const docRef: DocumentReference = await addDoc(collection(db, "partnership"), {
       ...formData,
