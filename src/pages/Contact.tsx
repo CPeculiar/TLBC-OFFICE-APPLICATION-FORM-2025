@@ -72,8 +72,8 @@ const Contact = () => {
           title="Message Sent!"
           description="Thank you for contacting us. We will respond as soon as possible."
         />
-        <div className="container mx-auto px-2 sm:px-4 max-w-md">
-          <FormCard title="Thank You">
+        <div className="container mx-auto px-2 sm:px-4 max-w-md mt-4">
+          <FormCard title="Thank You" className="text-center">
             <div className="text-center py-4 px-2 sm:py-8 sm:px-0">
               <CheckCircle className="w-10 h-10 sm:w-12 md:w-16 sm:h-12 md:h-16 text-green-500 mx-auto mb-3 sm:mb-4" />
               <p className="text-sm sm:text-base md:text-lg mb-4 sm:mb-6 leading-relaxed px-1 sm:px-2">

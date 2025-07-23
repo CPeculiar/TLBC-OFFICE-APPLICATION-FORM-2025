@@ -21,7 +21,7 @@ const registrationSchema = z.object({
   phone: z.string().min(10, 'Please enter a valid phone number'),
   address: z.string().min(3, 'Please enter your complete address'),
   category: z.string().min(2, 'Category must be at least 2 characters'),
-  zone: z.string().min(3, 'Zone must be at least 3 characters'),
+  zone: z.string().optional(),
   church: z.string().optional(),
 });
 
@@ -117,10 +117,10 @@ const Registration = () => {
         <div className="w-full max-w-full overflow-hidden">
           <PageHeader
             title="Registration Complete!"
-            description="Welcome to The Lord's Brethren Church family"
+            description="Thank you for Registering for TLBC 2025"
           />
         </div>
-        <div className="container mx-auto max-w-xs sm:max-w-md w-full px-2 sm:px-4">
+        <div className="container mx-auto max-w-xs sm:max-w-md w-full px-2 sm:px-4 mt-4 text-center">
           <FormCard title="Thank You">
             <div className="text-center py-6 sm:py-8 px-4">
               <CheckCircle className="w-12 h-12 sm:w-16 sm:h-16 text-green-500 mx-auto mb-4" />
@@ -334,7 +334,7 @@ const Registration = () => {
                 {categoryValue && (
                   <FormField
                     control={form.control}
-                    name="zone"
+                   name={categoryValue === "Member" ? "zone" : "church"}
                     render={({ field }) => (
                       <FormItem className="w-full">
                         <FormLabel className="text-sm sm:text-base break-words leading-relaxed">

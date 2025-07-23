@@ -58,7 +58,6 @@ const Partnership = () => {
       setTimeout(() => {
         window.location.href = 'https://paystack.shop/pay/tlbc25';
       }, 1500);
-      
         form.reset();
     } catch (error) {
       toast({
@@ -66,9 +65,7 @@ const Partnership = () => {
         description: "Please try again later or contact us directly.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
-    }
+    } 
   };
 
   if (isSubmitted) {

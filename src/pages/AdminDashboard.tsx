@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ChevronLeft, ChevronRight, LogOut, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { fetchApplications, fetchPartnerships } from '@/services/firestore';
+import { useAuth } from '@/services/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import PageHeader from '@/components/PageHeader';
 import { 
   Users, 
@@ -19,11 +23,88 @@ import {
   RefreshCw
 } from 'lucide-react';
 
+import { 
+  collection, 
+  getDocs, 
+  query,
+  orderBy,
+  QuerySnapshot,
+  DocumentData
+} from 'firebase/firestore';
+import { db } from '@/services/firebaseConfig';
+
 interface SubmissionData {
   id: string;
   submittedAt: any;
   [key: string]: any;
 }
+
+// Updated Firebase fetch functions
+const fetchRegistrations = async (): Promise<SubmissionData[]> => {
+  try {
+    const q = query(
+      collection(db, "registration"), 
+      orderBy("submittedAt", "desc")
+    );
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+    
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        submittedAt: data.submittedAt // Keep original timestamp for formatting
+      } as SubmissionData;
+    });
+  } catch (error) {
+    console.error("Error fetching registrations:", error);
+    throw error;
+  }
+};
+
+const fetchPartnerships = async (): Promise<SubmissionData[]> => {
+  try {
+    const q = query(
+      collection(db, "partnership"), 
+      orderBy("submittedAt", "desc")
+    );
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+    
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        submittedAt: data.submittedAt
+      } as SubmissionData;
+    });
+  } catch (error) {
+    console.error("Error fetching partnerships:", error);
+    throw error;
+  }
+};
+
+const fetchContactForms = async (): Promise<SubmissionData[]> => {
+  try {
+    const q = query(
+      collection(db, "contactForms"), 
+      orderBy("submittedAt", "desc")
+    );
+    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+    
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        submittedAt: data.submittedAt
+      } as SubmissionData;
+    });
+  } catch (error) {
+    console.error("Error fetching contact forms:", error);
+    throw error;
+  }
+};
 
 const AdminDashboard = () => {
   const [registrations, setRegistrations] = useState<SubmissionData[]>([]);
@@ -31,25 +112,57 @@ const AdminDashboard = () => {
   const [contactForms, setContactForms] = useState<SubmissionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(8);
+  const [loggingOut, setLoggingOut] = useState(false);
   const { toast } = useToast();
+  const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadAllData();
   }, []);
 
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await logout();
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+      });
+      navigate('/admin/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Logout Error",
+        description: "There was an error logging out. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoggingOut(false);
+    }
+  };
+
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const [regResult, partResult] = await Promise.all([
-        fetchApplications(),
+      const [regResult, partResult, contactResult] = await Promise.all([
+        fetchRegistrations(),
         fetchPartnerships(),
+        fetchContactForms()
       ]);
+      
+      setRegistrations(regResult);
+      setPartnerships(partResult);
+      setContactForms(contactResult);
       
       toast({
         title: "Data Loaded",
         description: "All submissions have been loaded successfully.",
       });
     } catch (error) {
+      console.error("Error loading data:", error);
       toast({
         title: "Error Loading Data",
         description: "Failed to load submissions. Please try again.",
@@ -79,6 +192,215 @@ const AdminDashboard = () => {
     );
   };
 
+const downloadAllDataAsPDF = () => {
+  const doc = new jsPDF();
+  let yPos = 20;
+  const pageHeight = doc.internal.pageSize.height;
+  const marginLeft = 10;
+  const marginRight = 10;
+  const pageWidth = doc.internal.pageSize.width - marginLeft - marginRight;
+  
+  // Helper function to add a new page if needed
+  const checkPageBreak = (requiredSpace = 30) => {
+    if (yPos + requiredSpace > pageHeight - 20) {
+      doc.addPage();
+      yPos = 20;
+    }
+  };
+
+  // Helper function to split text into multiple lines if needed
+  const splitText = (text, maxWidth) => {
+    if (!text) return [''];
+    const textStr = text.toString();
+    return doc.splitTextToSize(textStr, maxWidth);
+  };
+
+  // Helper function to draw a table with proper spacing and no truncation
+  const drawTable = (headers, data, startY, columnWidths) => {
+    let currentY = startY;
+    const rowHeight = 6;
+    
+    // Ensure column widths add up to page width
+    const totalWidth = columnWidths.reduce((sum, width) => sum + width, 0);
+    const adjustedWidths = columnWidths.map(width => (width / totalWidth) * pageWidth);
+    
+    // Draw headers
+    doc.setFillColor(66, 66, 66);
+    doc.rect(marginLeft, currentY, pageWidth, rowHeight + 2, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "bold");
+    
+    let xPos = marginLeft;
+    headers.forEach((header, index) => {
+      doc.text(header, xPos + 2, currentY + 5);
+      xPos += adjustedWidths[index];
+    });
+    
+    currentY += rowHeight + 2;
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    
+    // Draw data rows
+    data.forEach((row, rowIndex) => {
+      // Calculate row height based on content
+      let maxLines = 1;
+      row.forEach((cell, cellIndex) => {
+        const lines = splitText(cell, adjustedWidths[cellIndex] - 4);
+        maxLines = Math.max(maxLines, lines.length);
+      });
+      
+      const actualRowHeight = maxLines * 4 + 2;
+      
+      checkPageBreak(actualRowHeight);
+      if (yPos === 20) currentY = 20; // Reset if new page
+      
+      // Alternate row colors
+      if (rowIndex % 2 === 0) {
+        doc.setFillColor(248, 248, 248);
+        doc.rect(marginLeft, currentY, pageWidth, actualRowHeight, 'F');
+      }
+      
+      // Draw cell borders for each column
+      let xPos = marginLeft;
+      row.forEach((cell, cellIndex) => {
+        // Draw vertical line after each column (except last)
+        if (cellIndex < row.length - 1) {
+          doc.setDrawColor(200, 200, 200);
+          doc.line(xPos + adjustedWidths[cellIndex], currentY, xPos + adjustedWidths[cellIndex], currentY + actualRowHeight);
+        }
+        
+        const lines = splitText(cell, adjustedWidths[cellIndex] - 4);
+        lines.forEach((line, lineIndex) => {
+          doc.text(line, xPos + 2, currentY + 4 + (lineIndex * 4));
+        });
+        xPos += adjustedWidths[cellIndex];
+      });
+      
+      currentY += actualRowHeight;
+      yPos = currentY;
+    });
+    
+    return currentY + 10;
+  };
+  
+  // Title
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.text('Church Submissions Report', marginLeft, yPos);
+  yPos += 15;
+  
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Generated on: ${new Date().toLocaleDateString()}`, marginLeft, yPos);
+  yPos += 20;
+
+  // Registrations Section
+  if (registrations.length > 0) {
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Registrations (${registrations.length})`, marginLeft, yPos);
+    yPos += 10;
+
+    const regData = registrations.map(reg => [
+      `${reg.firstName} ${reg.lastName}`,
+      reg.email || '',
+      reg.phone || '',
+      reg.church || '',
+      reg.zone || '',
+      reg.category || '',
+      reg.gender || ''
+    ]);
+
+    // Column widths for registration table (proportional to content) - must add up to pageWidth
+    const regColumnWidths = [30, 40, 22, 30, 22, 22, 24]; // Total = 190 (close to pageWidth)
+
+    yPos = drawTable(
+      ['Name', 'Email', 'Phone', 'Church', 'Zone', 'Category', 'Gender'],
+      regData,
+      yPos,
+      regColumnWidths
+    );
+  }
+
+  // Partnerships Section
+  if (partnerships.length > 0) {
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Partnerships (${partnerships.length})`, marginLeft, yPos);
+    yPos += 10;
+
+    const partData = partnerships.map(part => [
+      `${part.firstName} ${part.lastName}`,
+      part.email || '',
+      part.phone || '',
+      part.church || '',
+      part.address || '',
+      formatDate(part.submittedAt)
+    ]);
+
+    // Column widths for partnership table
+    const partColumnWidths = [40, 50, 25, 40, 50, 35];
+
+    yPos = drawTable(
+      ['Name', 'Email', 'Phone', 'Church', 'Address', 'Date'],
+      partData,
+      yPos,
+      partColumnWidths
+    );
+  }
+
+  // Contact Forms Section
+  if (contactForms.length > 0) {
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Contact Forms (${contactForms.length})`, marginLeft, yPos);
+    yPos += 10;
+
+    const contactData = contactForms.map(contact => [
+      `${contact.firstName} ${contact.lastName}`,
+      contact.email || '',
+      contact.phone || '',
+      contact.message || '',
+      formatDate(contact.submittedAt)
+    ]);
+
+    // Column widths for contact table (giving more space to message)
+    const contactColumnWidths = [40, 50, 25, 70, 35];
+
+    yPos = drawTable(
+      ['Name', 'Email', 'Phone', 'Message', 'Date'],
+      contactData,
+      yPos,
+      contactColumnWidths
+    );
+  }
+
+  // Save the PDF
+  doc.save(`TLBC'25-submissions-${new Date().toISOString().split('T')[0]}.pdf`);
+  
+  toast({
+    title: "Download Complete",
+    description: "All submitted data has been downloaded as PDF.",
+  });
+};
+
+// 5. Add this pagination function after the download function
+const getPaginatedData = (data) => {
+  const filteredData = filterData(data);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  return filteredData.slice(startIndex, endIndex);
+};
+
+const getTotalPages = (data) => {
+  return Math.ceil(filterData(data).length / itemsPerPage);
+};
+
   const RegistrationCard = ({ registration }: { registration: SubmissionData }) => (
     <Card className="mb-4 hover:shadow-md smooth-transition">
       <CardHeader className="pb-3">
@@ -100,29 +422,15 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
           <div className="space-y-1">
             <p className="break-words"><strong>Phone:</strong> {registration.phone}</p>
-            <p className="break-words"><strong>City:</strong> {registration.city}</p>
-            <p className="break-words"><strong>Date of Birth:</strong> {registration.dateOfBirth}</p>
+            <p className="break-words"><strong>Address:</strong> {registration.address}</p>
+            <p className="break-words"><strong>Gender:</strong> {registration.gender}</p>
+            <p className="break-words"><strong>Category:</strong> {registration.category}</p>
           </div>
           <div className="space-y-1">
-            <p className="break-words"><strong>Emergency Contact:</strong> {registration.emergencyContact}</p>
-            <p className="break-words"><strong>Emergency Phone:</strong> {registration.emergencyPhone}</p>
-            {registration.previousChurch && (
-              <p className="break-words"><strong>Previous Church:</strong> {registration.previousChurch}</p>
-            )}
+            <p className="break-words"><strong>Church:</strong> {registration.church}</p>
+            <p className="break-words"><strong>Zone:</strong> {registration.zone}</p>
           </div>
         </div>
-        {registration.ministryInterests && (
-          <div className="mt-3 sm:mt-4">
-            <p className="text-xs sm:text-sm font-medium mb-1">Ministry Interests:</p>
-            <p className="text-xs sm:text-sm text-muted-foreground break-words">{registration.ministryInterests}</p>
-          </div>
-        )}
-        {registration.testimony && (
-          <div className="mt-3 sm:mt-4">
-            <p className="text-xs sm:text-sm font-medium mb-1">Testimony:</p>
-            <p className="text-xs sm:text-sm text-muted-foreground break-words">{registration.testimony}</p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
@@ -132,8 +440,10 @@ const AdminDashboard = () => {
       <CardHeader className="pb-3">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
           <div className="min-w-0 flex-1">
-            <CardTitle className="text-base sm:text-lg break-words">{partnership.organizationName}</CardTitle>
-            <CardDescription className="text-xs sm:text-sm break-words">{partnership.contactPersonName} • {partnership.email}</CardDescription>
+            <CardTitle className="text-base sm:text-lg break-words">
+              {partnership.firstName} {partnership.lastName}
+            </CardTitle>
+            <CardDescription className="text-xs sm:text-sm break-words">{partnership.email}</CardDescription>
           </div>
           <Badge variant="outline" className="self-start shrink-0 text-xs">
             <Calendar className="w-2 h-2 sm:w-3 sm:h-3 mr-1" />
@@ -143,31 +453,13 @@ const AdminDashboard = () => {
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm mb-3 sm:mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
           <div className="space-y-1">
-            <p className="break-words"><strong>Type:</strong> {partnership.organizationType}</p>
-            <p className="break-words"><strong>Partnership:</strong> {partnership.partnershipType}</p>
             <p className="break-words"><strong>Phone:</strong> {partnership.phone}</p>
+            <p className="break-words"><strong>Church:</strong> {partnership.church}</p>
           </div>
           <div className="space-y-1">
             <p className="break-words"><strong>Address:</strong> {partnership.address}</p>
-            {partnership.website && (
-              <p className="break-all"><strong>Website:</strong> {partnership.website}</p>
-            )}
-          </div>
-        </div>
-        <div className="space-y-2 sm:space-y-3">
-          <div>
-            <p className="text-xs sm:text-sm font-medium mb-1">Mission Statement:</p>
-            <p className="text-xs sm:text-sm text-muted-foreground break-words">{partnership.missionStatement}</p>
-          </div>
-          <div>
-            <p className="text-xs sm:text-sm font-medium mb-1">Partnership Goals:</p>
-            <p className="text-xs sm:text-sm text-muted-foreground break-words">{partnership.partnershipGoals}</p>
-          </div>
-          <div>
-            <p className="text-xs sm:text-sm font-medium mb-1">Expected Contribution:</p>
-            <p className="text-xs sm:text-sm text-muted-foreground break-words">{partnership.expectedContribution}</p>
           </div>
         </div>
       </CardContent>
@@ -182,7 +474,7 @@ const AdminDashboard = () => {
             <CardTitle className="text-base sm:text-lg break-words">
               {contact.firstName} {contact.lastName}
             </CardTitle>
-            <CardDescription className="text-xs sm:text-sm break-words">{contact.email} • {contact.subject}</CardDescription>
+            <CardDescription className="text-xs sm:text-sm break-words">{contact.email}</CardDescription>
           </div>
           <Badge variant="outline" className="self-start shrink-0 text-xs">
             <Calendar className="w-2 h-2 sm:w-3 sm:h-3 mr-1" />
@@ -195,10 +487,6 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm mb-3 sm:mb-4">
           <div className="space-y-1">
             <p className="break-words"><strong>Phone:</strong> {contact.phone}</p>
-            <p className="break-words"><strong>Message Type:</strong> {contact.messageType}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="break-words"><strong>Preferred Contact:</strong> {contact.preferredContact}</p>
           </div>
         </div>
         <div>
@@ -208,6 +496,71 @@ const AdminDashboard = () => {
       </CardContent>
     </Card>
   );
+
+  const PaginationControls = ({ data, currentPage, setCurrentPage }) => {
+  const totalPages = getTotalPages(data);
+  
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="flex items-center justify-between mt-6 px-2">
+      <div className="text-sm text-muted-foreground">
+        Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filterData(data).length)} to{' '}
+        {Math.min(currentPage * itemsPerPage, filterData(data).length)} of {filterData(data).length} entries
+      </div>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+          disabled={currentPage === 1}
+          className="text-xs px-2 py-1"
+        >
+          <ChevronLeft className="w-3 h-3 mr-1" />
+          Previous
+        </Button>
+        
+        <div className="flex items-center gap-1">
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            let pageNum;
+            if (totalPages <= 5) {
+              pageNum = i + 1;
+            } else if (currentPage <= 3) {
+              pageNum = i + 1;
+            } else if (currentPage >= totalPages - 2) {
+              pageNum = totalPages - 4 + i;
+            } else {
+              pageNum = currentPage - 2 + i;
+            }
+            
+            return (
+              <Button
+                key={pageNum}
+                variant={currentPage === pageNum ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCurrentPage(pageNum)}
+                className="text-xs px-2 py-1 min-w-[32px]"
+              >
+                {pageNum}
+              </Button>
+            );
+          })}
+        </div>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+          disabled={currentPage === totalPages}
+          className="text-xs px-2 py-1"
+        >
+          Next
+          <ChevronRight className="w-3 h-3 ml-1" />
+        </Button>
+      </div>
+    </div>
+  );
+};
 
   if (loading) {
     return (
@@ -228,10 +581,41 @@ const AdminDashboard = () => {
     <div className="min-h-screen py-6 sm:py-12">
       <PageHeader
         title="Admin Dashboard"
-        description="Manage and view all church submissions"
+        description="Manage and view all submissions for TLBC'25"
       />
 
       <div className="container mx-auto px-4">
+        {/* Admin Header with User Info and Logout */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white rounded-lg p-4 mb-6 shadow-sm border">
+          <div className="flex items-center gap-3 mb-3 sm:mb-0">
+            <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="font-medium text-gray-900">Welcome back, Admin</p>
+              <p className="text-sm text-gray-600">{currentUser?.email}</p>
+            </div>
+          </div>
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="text-sm border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 self-start sm:self-auto"
+            disabled={loggingOut}
+          >
+            {loggingOut ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Logging out...
+              </>
+            ) : (
+              <>
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </>
+            )}
+          </Button>
+        </div>
+        
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Card className="animate-fade-in">
@@ -281,15 +665,25 @@ const AdminDashboard = () => {
             <Input
               placeholder="Search all submissions..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1); // Reset to first page when searching
+              }}
               className="pl-10 text-sm"
             />
           </div>
-          <Button onClick={loadAllData} variant="outline" className="shrink-0 text-sm px-3 sm:px-4">
-            <RefreshCw className="w-4 h-4 mr-1 sm:mr-2" />
-            <span className="hidden xs:inline">Refresh</span>
-            <span className="xs:hidden">Refresh</span>
-          </Button>
+          <div className="flex gap-2 shrink-0">
+            <Button onClick={downloadAllDataAsPDF} variant="default" className="text-sm px-3 sm:px-4">
+              <Download className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden xs:inline">Download PDF</span>
+              <span className="xs:hidden">PDF</span>
+            </Button>
+            <Button onClick={loadAllData} variant="outline" className="text-sm px-3 sm:px-4">
+              <RefreshCw className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden xs:inline">Refresh</span>
+              <span className="xs:hidden">Refresh</span>
+            </Button>
+          </div>
         </div>
 
         {/* Submissions Tabs */}
@@ -311,7 +705,7 @@ const AdminDashboard = () => {
 
           <TabsContent value="registrations" className="mt-4 sm:mt-6">
             <div className="space-y-4">
-              {filterData(registrations).length === 0 ? (
+              {getPaginatedData(registrations).length === 0 ? (
                 <Card>
                   <CardContent className="py-8 text-center">
                     <Users className="w-8 h-8 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-4" />
@@ -319,16 +713,23 @@ const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               ) : (
-                filterData(registrations).map((registration) => (
-                  <RegistrationCard key={registration.id} registration={registration} />
-                ))
+                <>
+                  {getPaginatedData(registrations).map((registration) => (
+                    <RegistrationCard key={registration.id} registration={registration} />
+                  ))}
+                  <PaginationControls 
+                    data={registrations} 
+                    currentPage={currentPage} 
+                    setCurrentPage={setCurrentPage} 
+                  />
+                </>
               )}
             </div>
           </TabsContent>
 
-          <TabsContent value="partnerships" className="mt-4 sm:mt-6">
+         <TabsContent value="partnerships" className="mt-4 sm:mt-6">
             <div className="space-y-4">
-              {filterData(partnerships).length === 0 ? (
+              {getPaginatedData(partnerships).length === 0 ? (
                 <Card>
                   <CardContent className="py-8 text-center">
                     <Handshake className="w-8 h-8 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-4" />
@@ -336,16 +737,23 @@ const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               ) : (
-                filterData(partnerships).map((partnership) => (
-                  <PartnershipCard key={partnership.id} partnership={partnership} />
-                ))
+                <>
+                  {getPaginatedData(partnerships).map((partnership) => (
+                    <PartnershipCard key={partnership.id} partnership={partnership} />
+                  ))}
+                  <PaginationControls 
+                    data={partnerships} 
+                    currentPage={currentPage} 
+                    setCurrentPage={setCurrentPage} 
+                  />
+                </>
               )}
             </div>
           </TabsContent>
 
           <TabsContent value="contacts" className="mt-4 sm:mt-6">
             <div className="space-y-4">
-              {filterData(contactForms).length === 0 ? (
+              {getPaginatedData(contactForms).length === 0 ? (
                 <Card>
                   <CardContent className="py-8 text-center">
                     <Mail className="w-8 h-8 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-4" />
@@ -353,12 +761,22 @@ const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               ) : (
-                filterData(contactForms).map((contact) => (
-                  <ContactCard key={contact.id} contact={contact} />
-                ))
+                <>
+                  {getPaginatedData(contactForms).map((contact) => (
+                    <ContactCard key={contact.id} contact={contact} />
+                  ))}
+                  <PaginationControls 
+                    data={contactForms} 
+                    currentPage={currentPage} 
+                    setCurrentPage={setCurrentPage} 
+                  />
+                </>
               )}
             </div>
           </TabsContent>
+
+          
+
         </Tabs>
       </div>
     </div>
