@@ -144,7 +144,7 @@ const AdminDashboard = () => {
   };
 
 const downloadAllDataAsPDF = () => {
-  const doc = new jsPDF();
+  const doc = new jsPDF('landscape');
   let yPos = 20;
   const pageHeight = doc.internal.pageSize.height;
   const marginLeft = 10;
@@ -166,129 +166,7 @@ const downloadAllDataAsPDF = () => {
     return doc.splitTextToSize(textStr, maxWidth);
   };
 
-  // Helper function to draw detailed application data
-  const drawDetailedApplication = (application, startY) => {
-    let currentY = startY;
-    const lineHeight = 5;
-    const sectionSpacing = 8;
-    
-    // Application header
-    doc.setFillColor(240, 240, 240);
-    doc.rect(marginLeft, currentY, pageWidth, 8, 'F');
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
-    doc.text(`${application.firstName} ${application.lastName}`, marginLeft + 2, currentY + 6);
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Submitted: ${formatDate(application.submittedAt)}`, marginLeft + 2, currentY + 12);
-    currentY += 15;
-    
-    // Basic Information
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text('Personal Information:', marginLeft, currentY);
-    currentY += lineHeight + 2;
-    
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    const basicInfo = [
-      `Email: ${application.email || 'N/A'}`,
-      `Phone: ${application.phone || 'N/A'}`,
-      `Address: ${application.address || 'N/A'}`,
-      `Gender: ${application.gender || 'N/A'}`,
-      `Church: ${application.church || 'N/A'}`,
-      `Zone: ${application.zone || 'N/A'}`
-    ];
-    
-    basicInfo.forEach(info => {
-      checkPageBreak(lineHeight + 2);
-      doc.text(info, marginLeft + 5, currentY);
-      currentY += lineHeight;
-    });
-    currentY += sectionSpacing;
-    
-    // Current Position
-    if (application.officeNow) {
-      checkPageBreak(20);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.text('Current Position:', marginLeft, currentY);
-      currentY += lineHeight + 2;
-      
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "normal");
-      const positionLines = splitText(application.officeNow, pageWidth - 10);
-      positionLines.forEach(line => {
-        checkPageBreak(lineHeight + 2);
-        doc.text(line, marginLeft + 5, currentY);
-        currentY += lineHeight;
-      });
-      currentY += sectionSpacing;
-    }
-    
-    // Achievements
-    if (application.achievements) {
-      checkPageBreak(20);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.text('Achievements:', marginLeft, currentY);
-      currentY += lineHeight + 2;
-      
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "normal");
-      const achievementLines = splitText(application.achievements, pageWidth - 10);
-      achievementLines.forEach(line => {
-        checkPageBreak(lineHeight + 2);
-        doc.text(line, marginLeft + 5, currentY);
-        currentY += lineHeight;
-      });
-      currentY += sectionSpacing;
-    }
-    
-    // Office Applying For
-    checkPageBreak(20);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text('Office Applying For:', marginLeft, currentY);
-    currentY += lineHeight + 2;
-    
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    const officeLines = splitText(application.officeApply || 'N/A', pageWidth - 10);
-    officeLines.forEach(line => {
-      checkPageBreak(lineHeight + 2);
-      doc.text(line, marginLeft + 5, currentY);
-      currentY += lineHeight;
-    });
-    currentY += sectionSpacing;
-    
-    // Reasons for Applying
-    checkPageBreak(20);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text('Reasons for Applying:', marginLeft, currentY);
-    currentY += lineHeight + 2;
-    
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    const reasonLines = splitText(application.reasonsApply || 'N/A', pageWidth - 10);
-    reasonLines.forEach(line => {
-      checkPageBreak(lineHeight + 2);
-      doc.text(line, marginLeft + 5, currentY);
-      currentY += lineHeight;
-    });
-    
-    // Add separator line
-    currentY += 10;
-    checkPageBreak(5);
-    doc.setDrawColor(200, 200, 200);
-    doc.line(marginLeft, currentY, marginLeft + pageWidth, currentY);
-    currentY += 10;
-    
-    yPos = currentY;
-    return currentY;
-  };
+
   
   // Title
   doc.setFontSize(18);
@@ -302,16 +180,75 @@ const downloadAllDataAsPDF = () => {
   doc.text(`Total Applications: ${registrations.length}`, marginLeft, yPos + 8);
   yPos += 25;
 
-  // Applications Section
+  // Applications Table
   if (registrations.length > 0) {
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text('Applications Details:', marginLeft, yPos);
-    yPos += 15;
+    const tableData = registrations.map((app, index) => [
+      (index + 1).toString(),
+      `${app.firstName || ''} ${app.lastName || ''}`.trim(),
+      app.email || '',
+      app.phone || '',
+      app.gender || '',
+      app.church || '',
+      app.zone || '',
+      app.officeNow || '',
+      app.achievements || '',
+      app.officeApply || '',
+      app.reasonsApply || ''
+    ]);
 
-    registrations.forEach((application, index) => {
-      checkPageBreak(50);
-      yPos = drawDetailedApplication(application, yPos);
+    autoTable(doc, {
+      head: [[
+        'S/N',
+        'Name',
+        'Email', 
+        'Phone',
+        'Gender',
+        'Church',
+        'Zone',
+        'Current Position',
+        'Achievements',
+        'Office Applying For',
+        'Reasons for Applying'
+      ]],
+      body: tableData,
+      startY: yPos,
+      styles: {
+        fontSize: 7,
+        cellPadding: 3,
+        overflow: 'linebreak',
+        halign: 'left',
+        valign: 'top',
+        lineColor: [200, 200, 200],
+        lineWidth: 0.1
+      },
+      headStyles: {
+        fillColor: [66, 66, 66],
+        textColor: [255, 255, 255],
+        fontSize: 8,
+        fontStyle: 'bold',
+        halign: 'center',
+        valign: 'middle'
+      },
+      alternateRowStyles: {
+        fillColor: [248, 248, 248]
+      },
+      columnStyles: {
+        0: { cellWidth: 10 }, // S/N
+        1: { cellWidth: 20 }, // Name
+        2: { cellWidth: 26 }, // Email
+        3: { cellWidth: 18 }, // Phone
+        4: { cellWidth: 12 }, // Gender
+        5: { cellWidth: 20 }, // Church
+        6: { cellWidth: 15 }, // Zone
+        7: { cellWidth: 31 }, // Current Position
+        8: { cellWidth: 40 }, // Achievements
+        9: { cellWidth: 33 }, // Office Applying
+        10: { cellWidth: 40 } // Reasons
+      },
+      margin: { left: marginLeft, right: marginRight },
+      pageBreak: 'auto',
+      showHead: 'everyPage',
+      tableWidth: 'wrap'
     });
   }
 
