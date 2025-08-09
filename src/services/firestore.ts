@@ -33,7 +33,7 @@ interface ApplicationWithId extends ApplicationData {
 
 export const submitRegistrationForm = async (formData: ApplicationData): Promise<string> => {
   try {
-    const docRef: DocumentReference = await addDoc(collection(db, "registration"), {
+    const docRef: DocumentReference = await addDoc(collection(db, "applications-2025"), {
       ...formData,
       submittedAt: new Date()
     });
@@ -44,40 +44,10 @@ export const submitRegistrationForm = async (formData: ApplicationData): Promise
   }
 };
 
-export const submitPartnershipForm = async (formData: PartnershipFormData): Promise<string> => {
-  try {
-    const docRef: DocumentReference = await addDoc(collection(db, "partnership"), {
-      ...formData,
-      submittedAt: new Date()
-    });
-    return docRef.id;
-  } catch (error) {
-    console.error("Error details:", {
-      message: (error as Error).message,
-      code: (error as any).code,
-      stack: (error as Error).stack
-    });
-    throw error;
-  }
-};
-
-export const submitContactForm = async (formData: ApplicationData): Promise<string> => {
-  try {
-    const docRef: DocumentReference = await addDoc(collection(db, "contactForms"), {
-      ...formData,
-      submittedAt: new Date()
-    });
-    return docRef.id;
-  } catch (error) {
-    console.error("Error submitting contact form:", error);
-    throw error;
-  }
-};
-
 export const fetchApplications = async (): Promise<ApplicationWithId[]> => {
   try {
     const q = query(
-      collection(db, "registration"), 
+      collection(db, "applications-2025"), 
       orderBy("submittedAt", "desc")
     );
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
@@ -91,53 +61,7 @@ export const fetchApplications = async (): Promise<ApplicationWithId[]> => {
       } as ApplicationWithId;
     });
   } catch (error) {
-    console.error("Error fetching registrations:", error);
-    throw error;
-  }
-};
-
-// Fixed partnership fetching function
-export const fetchPartnerships = async (): Promise<ApplicationWithId[]> => {
-  try {
-    const q = query(
-      collection(db, "partnership"),  // Fixed: was pointing to "registration"
-      orderBy("submittedAt", "desc")
-    );
-    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
-    
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        submittedAt: data.submittedAt.toDate()
-      } as ApplicationWithId;
-    });
-  } catch (error) {
-    console.error("Error fetching partnerships:", error);
-    throw error;
-  }
-};
-
-// Added missing contact forms fetching function
-export const fetchContactForms = async (): Promise<ApplicationWithId[]> => {
-  try {
-    const q = query(
-      collection(db, "contactForms"), 
-      orderBy("submittedAt", "desc")
-    );
-    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
-    
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        submittedAt: data.submittedAt.toDate()
-      } as ApplicationWithId;
-    });
-  } catch (error) {
-    console.error("Error fetching contact forms:", error);
+    console.error("Error fetching applications:", error);
     throw error;
   }
 };

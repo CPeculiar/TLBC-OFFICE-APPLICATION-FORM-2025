@@ -11,9 +11,6 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Registration from "./pages/Registration";
-import Partnership from "./pages/Partnership";
-import Gallery from "./pages/Gallery";
-import Contact from "./pages/Contact";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import NotFound from "./pages/NotFound";
@@ -45,9 +42,6 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/registration" element={<Registration />} />
-              <Route path="/partnership" element={<Partnership />} />
-              <Route path="/gallery" element={<Gallery />} />
-              <Route path="/contact" element={<Contact />} />
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />

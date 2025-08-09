@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChevronLeft, ChevronRight, LogOut, User } from 'lucide-react';
+import { Award, ChevronLeft, ChevronRight, LogOut, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ import {
   Filter,
   Download,
   Loader2,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 
 import { 
@@ -43,7 +43,7 @@ interface SubmissionData {
 const fetchRegistrations = async (): Promise<SubmissionData[]> => {
   try {
     const q = query(
-      collection(db, "registration"), 
+      collection(db, "applications-2025"), 
       orderBy("submittedAt", "desc")
     );
     const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
@@ -57,59 +57,14 @@ const fetchRegistrations = async (): Promise<SubmissionData[]> => {
       } as SubmissionData;
     });
   } catch (error) {
-    console.error("Error fetching registrations:", error);
+    console.error("Error fetching applications:", error);
     throw error;
   }
 };
 
-const fetchPartnerships = async (): Promise<SubmissionData[]> => {
-  try {
-    const q = query(
-      collection(db, "partnership"), 
-      orderBy("submittedAt", "desc")
-    );
-    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
-    
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        submittedAt: data.submittedAt
-      } as SubmissionData;
-    });
-  } catch (error) {
-    console.error("Error fetching partnerships:", error);
-    throw error;
-  }
-};
-
-const fetchContactForms = async (): Promise<SubmissionData[]> => {
-  try {
-    const q = query(
-      collection(db, "contactForms"), 
-      orderBy("submittedAt", "desc")
-    );
-    const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
-    
-    return querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        submittedAt: data.submittedAt
-      } as SubmissionData;
-    });
-  } catch (error) {
-    console.error("Error fetching contact forms:", error);
-    throw error;
-  }
-};
 
 const AdminDashboard = () => {
   const [registrations, setRegistrations] = useState<SubmissionData[]>([]);
-  const [partnerships, setPartnerships] = useState<SubmissionData[]>([]);
-  const [contactForms, setContactForms] = useState<SubmissionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -147,15 +102,11 @@ const AdminDashboard = () => {
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const [regResult, partResult, contactResult] = await Promise.all([
+      const [regResult] = await Promise.all([
         fetchRegistrations(),
-        fetchPartnerships(),
-        fetchContactForms()
       ]);
       
       setRegistrations(regResult);
-      setPartnerships(partResult);
-      setContactForms(contactResult);
       
       toast({
         title: "Data Loaded",
@@ -215,177 +166,161 @@ const downloadAllDataAsPDF = () => {
     return doc.splitTextToSize(textStr, maxWidth);
   };
 
-  // Helper function to draw a table with proper spacing and no truncation
-  const drawTable = (headers, data, startY, columnWidths) => {
+  // Helper function to draw detailed application data
+  const drawDetailedApplication = (application, startY) => {
     let currentY = startY;
-    const rowHeight = 6;
+    const lineHeight = 5;
+    const sectionSpacing = 8;
     
-    // Ensure column widths add up to page width
-    const totalWidth = columnWidths.reduce((sum, width) => sum + width, 0);
-    const adjustedWidths = columnWidths.map(width => (width / totalWidth) * pageWidth);
-    
-    // Draw headers
-    doc.setFillColor(66, 66, 66);
-    doc.rect(marginLeft, currentY, pageWidth, rowHeight + 2, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(7);
+    // Application header
+    doc.setFillColor(240, 240, 240);
+    doc.rect(marginLeft, currentY, pageWidth, 8, 'F');
+    doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    
-    let xPos = marginLeft;
-    headers.forEach((header, index) => {
-      doc.text(header, xPos + 2, currentY + 5);
-      xPos += adjustedWidths[index];
-    });
-    
-    currentY += rowHeight + 2;
     doc.setTextColor(0, 0, 0);
+    doc.text(`${application.firstName} ${application.lastName}`, marginLeft + 2, currentY + 6);
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(6);
+    doc.text(`Submitted: ${formatDate(application.submittedAt)}`, marginLeft + 2, currentY + 12);
+    currentY += 15;
     
-    // Draw data rows
-    data.forEach((row, rowIndex) => {
-      // Calculate row height based on content
-      let maxLines = 1;
-      row.forEach((cell, cellIndex) => {
-        const lines = splitText(cell, adjustedWidths[cellIndex] - 4);
-        maxLines = Math.max(maxLines, lines.length);
+    // Basic Information
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text('Personal Information:', marginLeft, currentY);
+    currentY += lineHeight + 2;
+    
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    const basicInfo = [
+      `Email: ${application.email || 'N/A'}`,
+      `Phone: ${application.phone || 'N/A'}`,
+      `Address: ${application.address || 'N/A'}`,
+      `Gender: ${application.gender || 'N/A'}`,
+      `Church: ${application.church || 'N/A'}`,
+      `Zone: ${application.zone || 'N/A'}`
+    ];
+    
+    basicInfo.forEach(info => {
+      checkPageBreak(lineHeight + 2);
+      doc.text(info, marginLeft + 5, currentY);
+      currentY += lineHeight;
+    });
+    currentY += sectionSpacing;
+    
+    // Current Position
+    if (application.officeNow) {
+      checkPageBreak(20);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text('Current Position:', marginLeft, currentY);
+      currentY += lineHeight + 2;
+      
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      const positionLines = splitText(application.officeNow, pageWidth - 10);
+      positionLines.forEach(line => {
+        checkPageBreak(lineHeight + 2);
+        doc.text(line, marginLeft + 5, currentY);
+        currentY += lineHeight;
       });
+      currentY += sectionSpacing;
+    }
+    
+    // Achievements
+    if (application.achievements) {
+      checkPageBreak(20);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text('Achievements:', marginLeft, currentY);
+      currentY += lineHeight + 2;
       
-      const actualRowHeight = maxLines * 4 + 2;
-      
-      checkPageBreak(actualRowHeight);
-      if (yPos === 20) currentY = 20; // Reset if new page
-      
-      // Alternate row colors
-      if (rowIndex % 2 === 0) {
-        doc.setFillColor(248, 248, 248);
-        doc.rect(marginLeft, currentY, pageWidth, actualRowHeight, 'F');
-      }
-      
-      // Draw cell borders for each column
-      let xPos = marginLeft;
-      row.forEach((cell, cellIndex) => {
-        // Draw vertical line after each column (except last)
-        if (cellIndex < row.length - 1) {
-          doc.setDrawColor(200, 200, 200);
-          doc.line(xPos + adjustedWidths[cellIndex], currentY, xPos + adjustedWidths[cellIndex], currentY + actualRowHeight);
-        }
-        
-        const lines = splitText(cell, adjustedWidths[cellIndex] - 4);
-        lines.forEach((line, lineIndex) => {
-          doc.text(line, xPos + 2, currentY + 4 + (lineIndex * 4));
-        });
-        xPos += adjustedWidths[cellIndex];
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      const achievementLines = splitText(application.achievements, pageWidth - 10);
+      achievementLines.forEach(line => {
+        checkPageBreak(lineHeight + 2);
+        doc.text(line, marginLeft + 5, currentY);
+        currentY += lineHeight;
       });
-      
-      currentY += actualRowHeight;
-      yPos = currentY;
+      currentY += sectionSpacing;
+    }
+    
+    // Office Applying For
+    checkPageBreak(20);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text('Office Applying For:', marginLeft, currentY);
+    currentY += lineHeight + 2;
+    
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    const officeLines = splitText(application.officeApply || 'N/A', pageWidth - 10);
+    officeLines.forEach(line => {
+      checkPageBreak(lineHeight + 2);
+      doc.text(line, marginLeft + 5, currentY);
+      currentY += lineHeight;
+    });
+    currentY += sectionSpacing;
+    
+    // Reasons for Applying
+    checkPageBreak(20);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text('Reasons for Applying:', marginLeft, currentY);
+    currentY += lineHeight + 2;
+    
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    const reasonLines = splitText(application.reasonsApply || 'N/A', pageWidth - 10);
+    reasonLines.forEach(line => {
+      checkPageBreak(lineHeight + 2);
+      doc.text(line, marginLeft + 5, currentY);
+      currentY += lineHeight;
     });
     
-    return currentY + 10;
+    // Add separator line
+    currentY += 10;
+    checkPageBreak(5);
+    doc.setDrawColor(200, 200, 200);
+    doc.line(marginLeft, currentY, marginLeft + pageWidth, currentY);
+    currentY += 10;
+    
+    yPos = currentY;
+    return currentY;
   };
   
   // Title
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text('Church Submissions Report', marginLeft, yPos);
+  doc.text('TLBC Leadership Position Applications Report', marginLeft, yPos);
   yPos += 15;
   
   doc.setFontSize(12);
   doc.setFont("helvetica", "normal");
   doc.text(`Generated on: ${new Date().toLocaleDateString()}`, marginLeft, yPos);
-  yPos += 20;
+  doc.text(`Total Applications: ${registrations.length}`, marginLeft, yPos + 8);
+  yPos += 25;
 
-  // Registrations Section
+  // Applications Section
   if (registrations.length > 0) {
-    checkPageBreak(40);
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text(`Registrations (${registrations.length})`, marginLeft, yPos);
-    yPos += 10;
+    doc.text('Applications Details:', marginLeft, yPos);
+    yPos += 15;
 
-    const regData = registrations.map(reg => [
-      `${reg.firstName} ${reg.lastName}`,
-      reg.email || '',
-      reg.phone || '',
-      reg.church || '',
-      reg.zone || '',
-      reg.category || '',
-      reg.gender || ''
-    ]);
-
-    // Column widths for registration table (proportional to content) - must add up to pageWidth
-    const regColumnWidths = [30, 40, 22, 30, 22, 22, 24]; // Total = 190 (close to pageWidth)
-
-    yPos = drawTable(
-      ['Name', 'Email', 'Phone', 'Church', 'Zone', 'Category', 'Gender'],
-      regData,
-      yPos,
-      regColumnWidths
-    );
-  }
-
-  // Partnerships Section
-  if (partnerships.length > 0) {
-    checkPageBreak(40);
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text(`Partnerships (${partnerships.length})`, marginLeft, yPos);
-    yPos += 10;
-
-    const partData = partnerships.map(part => [
-      `${part.firstName} ${part.lastName}`,
-      part.email || '',
-      part.phone || '',
-      part.church || '',
-      part.address || '',
-      formatDate(part.submittedAt)
-    ]);
-
-    // Column widths for partnership table
-    const partColumnWidths = [40, 50, 25, 40, 50, 35];
-
-    yPos = drawTable(
-      ['Name', 'Email', 'Phone', 'Church', 'Address', 'Date'],
-      partData,
-      yPos,
-      partColumnWidths
-    );
-  }
-
-  // Contact Forms Section
-  if (contactForms.length > 0) {
-    checkPageBreak(40);
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text(`Contact Forms (${contactForms.length})`, marginLeft, yPos);
-    yPos += 10;
-
-    const contactData = contactForms.map(contact => [
-      `${contact.firstName} ${contact.lastName}`,
-      contact.email || '',
-      contact.phone || '',
-      contact.message || '',
-      formatDate(contact.submittedAt)
-    ]);
-
-    // Column widths for contact table (giving more space to message)
-    const contactColumnWidths = [40, 50, 25, 70, 35];
-
-    yPos = drawTable(
-      ['Name', 'Email', 'Phone', 'Message', 'Date'],
-      contactData,
-      yPos,
-      contactColumnWidths
-    );
+    registrations.forEach((application, index) => {
+      checkPageBreak(50);
+      yPos = drawDetailedApplication(application, yPos);
+    });
   }
 
   // Save the PDF
-  doc.save(`TLBC'25-submissions-${new Date().toISOString().split('T')[0]}.pdf`);
+  doc.save(`Leadership-Position-Applications-${new Date().toISOString().split('T')[0]}.pdf`);
   
   toast({
     title: "Download Complete",
-    description: "All submitted data has been downloaded as PDF.",
+    description: "All application data has been downloaded as PDF with complete details.",
   });
 };
 
@@ -419,79 +354,47 @@ const getTotalPages = (data) => {
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
-          <div className="space-y-1">
-            <p className="break-words"><strong>Phone:</strong> {registration.phone}</p>
-            <p className="break-words"><strong>Address:</strong> {registration.address}</p>
-            <p className="break-words"><strong>Gender:</strong> {registration.gender}</p>
-            <p className="break-words"><strong>Category:</strong> {registration.category}</p>
+        <div className="space-y-4">
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
+            <div className="space-y-1">
+              <p className="break-words"><strong>Phone:</strong> {registration.phone}</p>
+              <p className="break-words"><strong>Address:</strong> {registration.address}</p>
+              <p className="break-words"><strong>Gender:</strong> {registration.gender}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="break-words"><strong>Church:</strong> {registration.church}</p>
+              <p className="break-words"><strong>Zone:</strong> {registration.zone}</p>
+            </div>
           </div>
-          <div className="space-y-1">
-            <p className="break-words"><strong>Church:</strong> {registration.church}</p>
-            <p className="break-words"><strong>Zone:</strong> {registration.zone}</p>
+          
+          {/* Current Position */}
+          {registration.officeNow && (
+            <div className="border-t pt-3">
+              <p className="text-xs sm:text-sm"><strong>Current Position:</strong></p>
+              <p className="text-xs sm:text-sm text-gray-700 mt-1 whitespace-pre-wrap break-words">{registration.officeNow}</p>
+            </div>
+          )}
+          
+          {/* Achievements */}
+          {registration.achievements && (
+            <div className="border-t pt-3">
+              <p className="text-xs sm:text-sm"><strong>Achievements:</strong></p>
+              <p className="text-xs sm:text-sm text-gray-700 mt-1 whitespace-pre-wrap break-words">{registration.achievements}</p>
+            </div>
+          )}
+          
+          {/* Office Applying For */}
+          <div className="border-t pt-3">
+            <p className="text-xs sm:text-sm"><strong>Office Applying For:</strong></p>
+            <p className="text-xs sm:text-sm text-gray-700 mt-1 whitespace-pre-wrap break-words">{registration.officeApply}</p>
           </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const PartnershipCard = ({ partnership }: { partnership: SubmissionData }) => (
-    <Card className="mb-4 hover:shadow-md smooth-transition">
-      <CardHeader className="pb-3">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-          <div className="min-w-0 flex-1">
-            <CardTitle className="text-base sm:text-lg break-words">
-              {partnership.firstName} {partnership.lastName}
-            </CardTitle>
-            <CardDescription className="text-xs sm:text-sm break-words">{partnership.email}</CardDescription>
+          
+          {/* Reasons for Applying */}
+          <div className="border-t pt-3">
+            <p className="text-xs sm:text-sm"><strong>Reasons for Applying:</strong></p>
+            <p className="text-xs sm:text-sm text-gray-700 mt-1 whitespace-pre-wrap break-words">{registration.reasonsApply}</p>
           </div>
-          <Badge variant="outline" className="self-start shrink-0 text-xs">
-            <Calendar className="w-2 h-2 sm:w-3 sm:h-3 mr-1" />
-            <span className="hidden sm:inline">{formatDate(partnership.submittedAt)}</span>
-            <span className="sm:hidden">{formatDate(partnership.submittedAt).split(' at ')[0]}</span>
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
-          <div className="space-y-1">
-            <p className="break-words"><strong>Phone:</strong> {partnership.phone}</p>
-            <p className="break-words"><strong>Church:</strong> {partnership.church}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="break-words"><strong>Address:</strong> {partnership.address}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const ContactCard = ({ contact }: { contact: SubmissionData }) => (
-    <Card className="mb-4 hover:shadow-md smooth-transition">
-      <CardHeader className="pb-3">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-          <div className="min-w-0 flex-1">
-            <CardTitle className="text-base sm:text-lg break-words">
-              {contact.firstName} {contact.lastName}
-            </CardTitle>
-            <CardDescription className="text-xs sm:text-sm break-words">{contact.email}</CardDescription>
-          </div>
-          <Badge variant="outline" className="self-start shrink-0 text-xs">
-            <Calendar className="w-2 h-2 sm:w-3 sm:h-3 mr-1" />
-            <span className="hidden sm:inline">{formatDate(contact.submittedAt)}</span>
-            <span className="sm:hidden">{formatDate(contact.submittedAt).split(' at ')[0]}</span>
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm mb-3 sm:mb-4">
-          <div className="space-y-1">
-            <p className="break-words"><strong>Phone:</strong> {contact.phone}</p>
-          </div>
-        </div>
-        <div>
-          <p className="text-xs sm:text-sm font-medium mb-1">Message:</p>
-          <p className="text-xs sm:text-sm text-muted-foreground break-words">{contact.message}</p>
         </div>
       </CardContent>
     </Card>
@@ -581,7 +484,7 @@ const getTotalPages = (data) => {
     <div className="min-h-screen py-6 sm:py-12">
       <PageHeader
         title="Admin Dashboard"
-        description="Manage and view all submissions for TLBC'25"
+        description="Manage and view all submissions"
       />
 
       <div className="container mx-auto px-4">
@@ -617,42 +520,65 @@ const getTotalPages = (data) => {
         </div>
         
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Card className="animate-fade-in">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Registrations</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground shrink-0" />
             </CardHeader>
             <CardContent>
               <div className="text-xl sm:text-2xl font-bold">{registrations.length}</div>
               <p className="text-xs text-muted-foreground">
-                Total church registrations
+                Leadership Applications
               </p>
             </CardContent>
           </Card>
-
-          <Card className="animate-fade-in" style={{ animationDelay: '100ms' }}>
+          
+          <Card className="animate-fade-in">  
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Partnerships</CardTitle>
+              <CardTitle className="text-sm font-medium">Current Leaders</CardTitle>
+              <Award className="h-4 w-4 text-muted-foreground shrink-0" />
+            </CardHeader>
+            <CardContent> 
+              <div className="text-xl sm:text-2xl font-bold">
+                {registrations.filter(r => r.officeNow && r.officeNow.trim()).length}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Current Office Holders
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="animate-fade-in">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">With Achievements</CardTitle>
               <Handshake className="h-4 w-4 text-muted-foreground shrink-0" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">{partnerships.length}</div>
+              <div className="text-xl sm:text-2xl font-bold">
+                {registrations.filter(r => r.achievements && r.achievements.trim()).length}
+              </div>
               <p className="text-xs text-muted-foreground">
-                Partnership applications
+                Listed Achievements
               </p>
             </CardContent>
           </Card>
-
-          <Card className="animate-fade-in sm:col-span-2 lg:col-span-1" style={{ animationDelay: '200ms' }}>
+          
+          <Card className="animate-fade-in">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Contact Forms</CardTitle>
-              <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+              <CardTitle className="text-sm font-medium">Recent</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">{contactForms.length}</div>
+              <div className="text-xl sm:text-2xl font-bold">
+                {registrations.filter(r => {
+                  const submittedDate = r.submittedAt?.toDate ? r.submittedAt.toDate() : new Date(r.submittedAt);
+                  const daysDiff = (new Date().getTime() - submittedDate.getTime()) / (1000 * 3600 * 24);
+                  return daysDiff <= 7;
+                }).length}
+              </div>
               <p className="text-xs text-muted-foreground">
-                Messages and inquiries
+                Last 7 Days
               </p>
             </CardContent>
           </Card>
@@ -690,16 +616,8 @@ const getTotalPages = (data) => {
         <Tabs defaultValue="registrations" className="w-full">
           <TabsList className="grid w-full grid-cols-3 h-auto">
             <TabsTrigger value="registrations" className="text-xs sm:text-sm px-2 py-2 data-[state=active]:text-xs data-[state=active]:sm:text-sm">
-              <span className="hidden sm:inline">Registrations ({registrations.length})</span>
+              <span className="hidden sm:inline">Applications ({registrations.length})</span>
               <span className="sm:hidden">Reg ({registrations.length})</span>
-            </TabsTrigger>
-            <TabsTrigger value="partnerships" className="text-xs sm:text-sm px-2 py-2 data-[state=active]:text-xs data-[state=active]:sm:text-sm">
-              <span className="hidden sm:inline">Partnerships ({partnerships.length})</span>
-              <span className="sm:hidden">Part ({partnerships.length})</span>
-            </TabsTrigger>
-            <TabsTrigger value="contacts" className="text-xs sm:text-sm px-2 py-2 data-[state=active]:text-xs data-[state=active]:sm:text-sm">
-              <span className="hidden sm:inline">Contact Forms ({contactForms.length})</span>
-              <span className="sm:hidden">Contact ({contactForms.length})</span>
             </TabsTrigger>
           </TabsList>
 
@@ -709,7 +627,7 @@ const getTotalPages = (data) => {
                 <Card>
                   <CardContent className="py-8 text-center">
                     <Users className="w-8 h-8 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground text-sm sm:text-base">No registrations found</p>
+                    <p className="text-muted-foreground text-sm sm:text-base">No Applications found</p>
                   </CardContent>
                 </Card>
               ) : (
@@ -726,57 +644,6 @@ const getTotalPages = (data) => {
               )}
             </div>
           </TabsContent>
-
-         <TabsContent value="partnerships" className="mt-4 sm:mt-6">
-            <div className="space-y-4">
-              {getPaginatedData(partnerships).length === 0 ? (
-                <Card>
-                  <CardContent className="py-8 text-center">
-                    <Handshake className="w-8 h-8 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground text-sm sm:text-base">No partnership applications found</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <>
-                  {getPaginatedData(partnerships).map((partnership) => (
-                    <PartnershipCard key={partnership.id} partnership={partnership} />
-                  ))}
-                  <PaginationControls 
-                    data={partnerships} 
-                    currentPage={currentPage} 
-                    setCurrentPage={setCurrentPage} 
-                  />
-                </>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="contacts" className="mt-4 sm:mt-6">
-            <div className="space-y-4">
-              {getPaginatedData(contactForms).length === 0 ? (
-                <Card>
-                  <CardContent className="py-8 text-center">
-                    <Mail className="w-8 h-8 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground text-sm sm:text-base">No contact forms found</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <>
-                  {getPaginatedData(contactForms).map((contact) => (
-                    <ContactCard key={contact.id} contact={contact} />
-                  ))}
-                  <PaginationControls 
-                    data={contactForms} 
-                    currentPage={currentPage} 
-                    setCurrentPage={setCurrentPage} 
-                  />
-                </>
-              )}
-            </div>
-          </TabsContent>
-
-          
-
         </Tabs>
       </div>
     </div>

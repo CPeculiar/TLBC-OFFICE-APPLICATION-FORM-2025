@@ -16,13 +16,16 @@ import { Loader2, CheckCircle } from 'lucide-react';
 const registrationSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  gender: z.string().min(2, 'Gender must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
   phone: z.string().min(10, 'Please enter a valid phone number'),
+  email: z.string().optional(),
   address: z.string().min(3, 'Please enter your complete address'),
-  category: z.string().min(2, 'Category must be at least 2 characters'),
-  zone: z.string().optional(),
-  church: z.string().optional(),
+  gender: z.string().min(2, 'Gender must be at least 2 characters'),
+  church: z.string().min(2, 'Church name must be at least 2 characters'),
+  zone: z.string().min(2, 'Zone must be at least 2 characters'),
+  officeNow: z.string().optional(),
+  achievements: z.string().optional(),
+  officeApply: z.string().min(2, 'Office applying for must be at least 2 characters'),
+  reasonsApply: z.string().min(2, 'Reasons for applying must be at least 2 characters'),
 });
 
 type RegistrationFormData = z.infer<typeof registrationSchema>;
@@ -31,25 +34,25 @@ const Registration = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const form = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
       firstName: '',
       lastName: '',
-      gender: '',
-      email: '',
       phone: '',
+      email: '',
       address: '',
-      category: '',
+      gender: '',
       zone: '',
       church: '',
+      officeNow: '',
+      achievements: '',
+      officeApply: '',
+      reasonsApply: '',
     },
   });
-
-// Watch the category field to handle conditional rendering
-  const categoryValue = form.watch('category');
-  const zoneValue = form.watch('zone');
 
   const churchOptions = {
     'TLBC Awka': 'TLBC Awka',
@@ -73,37 +76,22 @@ const Registration = () => {
     'TLTN Agulu': 'TLTN Agulu', 
   };
 
-  // Reset zone when category changes
-  useEffect(() => {
-    if (categoryValue) {
-      form.setValue('zone', '');
-      form.setValue('church', '');
-    }
-  }, [categoryValue, form]);
-
-  // Reset church when zone changes
-  useEffect(() => {
-    if (zoneValue) {
-      form.setValue('church', '');
-    }
-  }, [zoneValue, form]);
-
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true);
     
     try {
       const result = await submitRegistrationForm(data);
         toast({
-          title: "Registration Successful!",
-          description: "Thank you for Registering. We'll be in touch soon.",
+          title: "Application submitted Successful!",
+          description: "Thank you for Applying. Blessings!",
           variant: "success",
         });
         setIsSubmitted(true);
         form.reset();
     } catch (error) {
       toast({
-        title: "Registration Failed",
-        description: "Please try again later or contact us directly.",
+        title: "Submission Failed",
+        description: "Please try again later or contact the CEO directly.",
         variant: "destructive",
       });
     } finally {
@@ -116,8 +104,8 @@ const Registration = () => {
       <div className="min-h-screen py-4 sm:py-6 md:py-12 px-3 sm:px-4 md:px-6">
         <div className="w-full max-w-full overflow-hidden">
           <PageHeader
-            title="Registration Complete!"
-            description="Thank you for Registering for TLBC 2025"
+            title="Application submitted successfully!"
+            description="Thank you for Applying. Blessings!"
           />
         </div>
         <div className="container mx-auto max-w-xs sm:max-w-md w-full px-2 sm:px-4 mt-4 text-center">
@@ -125,12 +113,12 @@ const Registration = () => {
             <div className="text-center py-6 sm:py-8 px-4">
               <CheckCircle className="w-12 h-12 sm:w-16 sm:h-16 text-green-500 mx-auto mb-4" />
               <p className="text-base sm:text-lg mb-4 sm:mb-6 leading-relaxed break-words">
-                Your registration has been successfully submitted. 
+                Your Application has been successfully submitted. 
                 <br className="hidden sm:inline"/>
                 <span className="block sm:inline"> Blessings!</span>
               </p>
               <Button 
-                onClick={() => setIsSubmitted(false)}
+                onClick={() => {setIsSubmitted(false);  navigate("/");}}
                 className="w-full max-w-full text-sm sm:text-base py-3 sm:py-3 min-h-[44px] sm:min-h-[48px]"
                 size="default"
               >
@@ -147,15 +135,15 @@ const Registration = () => {
     <div className="min-h-screen py-4 sm:py-6 md:py-12 px-3 sm:px-4 md:px-6">
       <div className="w-full max-w-full overflow-hidden">
         <PageHeader
-          title="TLBC 2025 Registration Form"
-          description="Fill out the form below with your accurate details to register for TLBC 2025"
+          title="Leadership Position Application Form"
+          description="Please, fill out the form below with the accurate details"
         />
       </div>
 
       <div className="container mx-auto max-w-full sm:max-w-xl md:max-w-2xl w-full px-2 sm:px-4">
         <FormCard
-          title="Registration Form"
-          description="Please fill out all required fields to complete your church registration"
+          title="Application Form"
+          description="Please fill out all required fields below and submit."
         >
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
@@ -239,7 +227,7 @@ const Registration = () => {
                   render={({ field }) => (
                     <FormItem className="w-full">
                       <FormLabel className="text-sm sm:text-base break-words">
-                        Email Address <span className='text-red-500'>*</span>
+                        Email Address
                       </FormLabel>
                       <FormControl>
                         <Input 
@@ -247,7 +235,6 @@ const Registration = () => {
                           placeholder="Enter email" 
                           {...field} 
                           className="form-focus w-full min-w-0 text-sm sm:text-base py-2.5 sm:py-3 px-2 sm:px-3"
-                          required
                         />
                       </FormControl>
                       <FormMessage className="text-xs sm:text-sm break-words" />
@@ -306,12 +293,11 @@ const Registration = () => {
                 
                  <FormField
                   control={form.control}
-                  name="category"
+                  name="zone"
                   render={({ field }) => (
                     <FormItem className="w-full">
                       <FormLabel className="text-sm sm:text-base break-words leading-relaxed"> 
-                       Are you a member of The Lord's Brethren Church Int'l? <span className='text-red-500'>*</span>
-                       
+                       Please select your zone <span className='text-red-500'>*</span>
                       </FormLabel>
                       <FormControl>
                         <select 
@@ -319,10 +305,13 @@ const Registration = () => {
                           className="form-focus w-full min-w-0 border rounded px-2 sm:px-3 py-2.5 sm:py-3 text-sm sm:text-base bg-background"
                         >
                         <option value="" disabled>
-                          Choose an option
+                         Select your zone
                         </option>
-                        <option value="Member">Yes</option>
-                        <option value="Invitee">No</option>
+                         <option value="Awka zone">Awka zone</option>
+                         <option value="Nnewi zone">Nnewi zone</option>
+                         <option value="Owerri zone">Owerri zone</option>
+                         <option value="Ekwulobia zone">Ekwulobia zone</option>
+                         <option value="Onitsha zone">Onitsha zone</option>
                       </select>
                       </FormControl>
                       <FormMessage className="text-xs sm:text-sm break-words" />
@@ -330,52 +319,6 @@ const Registration = () => {
                   )} 
                 />
 
-                   {/* Conditional Church/Zone Field */}
-                {categoryValue && (
-                  <FormField
-                    control={form.control}
-                   name={categoryValue === "Member" ? "zone" : "church"}
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel className="text-sm sm:text-base break-words leading-relaxed">
-                          {categoryValue === "Member" 
-                            ? "Please select your church or zone" 
-                            : "What is the name of your Church/Ministry?"
-                          }
-                          <span className='text-red-500'>*</span>
-                        </FormLabel>
-                        <FormControl>
-                          {categoryValue === "Member" ? (
-                            <select 
-                              {...field} 
-                              className="form-focus w-full min-w-0 border rounded px-2 sm:px-3 py-2.5 sm:py-3 text-sm sm:text-base bg-background"
-                            >
-                              <option value="" disabled>
-                                Select your zone
-                              </option>
-                              <option value="Awka zone">Awka zone</option>
-                              <option value="Nnewi zone">Nnewi zone</option>
-                              <option value="Owerri zone">Owerri zone</option>
-                              <option value="Ekwulobia zone">Ekwulobia zone</option>
-                              <option value="Onitsha zone">Onitsha zone</option>
-                            </select>
-                          ) : (
-                            <Input 
-                              type="text" 
-                              placeholder="Church name" 
-                              {...field} 
-                              className="form-focus w-full min-w-0 text-sm sm:text-base py-2.5 sm:py-3 px-2 sm:px-3"
-                            />
-                          )}
-                        </FormControl>
-                        <FormMessage className="text-xs sm:text-sm break-words" />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
-                   {/* Church Field - Only for Members who have selected a zone */}
-                {categoryValue === "Member" && zoneValue && (
                   <FormField
                     control={form.control}
                     name="church"
@@ -404,8 +347,112 @@ const Registration = () => {
                       </FormItem>
                     )}
                   />
-                )}
               </div>
+
+
+               {/* Leadership Information */}
+              <div className="space-y-3 sm:space-y-4">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground break-words">Leadership Information</h3>
+
+                <FormField
+                  control={form.control}
+                  name="officeNow"
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel className="text-sm sm:text-base break-words">
+                        Current Position(s)
+                      </FormLabel>
+                      <FormControl>
+                        <textarea 
+                          name='officeNow'
+                          // value={field.value}
+                          placeholder="List your current leadership position(s)" 
+                          {...field} 
+                          className="form-focus w-full min-w-0 text-sm sm:text-base py-2.5 sm:py-3 px-2 sm:px-3 rounded border bg-background"
+                           rows={3}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs sm:text-sm break-words" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="achievements"
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel className="text-sm sm:text-base break-words">
+                        Achievements
+                      </FormLabel>
+                      <FormControl>
+                        <textarea 
+                          name='achievements'
+                          // value={field.value}
+                          placeholder="List your achievements this ministry year" 
+                          {...field} 
+                          className="form-focus w-full min-w-0 text-sm sm:text-base py-2.5 sm:py-3 px-2 sm:px-3 rounded border bg-background"
+                           rows={3}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs sm:text-sm break-words" />
+                    </FormItem>
+                  )}
+                />
+
+               <FormField
+                  control={form.control}
+                  name="officeApply"
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel className="text-sm sm:text-base break-words">
+                        Office Applying For <span className='text-red-500'>*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <textarea 
+                          name='officeApply'
+                          placeholder="Specify the office(s) you are applying for. If multiple, separate with commas." 
+                          {...field} 
+                          className="form-focus w-full min-w-0 text-sm sm:text-base py-2.5 sm:py-3 px-2 sm:px-3 rounded border bg-background"
+                           rows={3}
+                           required
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs sm:text-sm break-words" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="reasonsApply"
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel className="text-sm sm:text-base break-words">
+                        Reasons for Applying <span className='text-red-500'>*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <textarea 
+                          name='reasonsApply'
+                          placeholder="Why do you want to serve in this office?" 
+                          {...field} 
+                          className="form-focus w-full min-w-0 text-sm sm:text-base py-2.5 sm:py-3 px-2 sm:px-3 rounded border bg-background"
+                           rows={3}
+                            required
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs sm:text-sm break-words" />
+                    </FormItem>
+                  )}
+                />
+
+
+
+
+
+              </div>
+
+
 
               <Button 
                 type="submit" 

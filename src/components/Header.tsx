@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Church } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import Logo from '/logo2.png'; 
+import Logo from '/logo.png'; 
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,11 +11,7 @@ const Header = () => {
 
   const navigation = [
     { name: 'Home', href: '/' },
-    { name: 'Register', href: '/registration' },
-    { name: 'Partnership', href: '/partnership' },
-    { name: 'Gallery', href: '/gallery' },
-    { name: 'Contact', href: '/contact' },
-    // { name: 'Admin', href: '/admin' },
+    { name: 'Apply', href: '/registration' }
   ];
 
   const isActive = (href: string) => location.pathname === href;
@@ -34,8 +30,8 @@ const Header = () => {
               />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl font-heading font-bold gradient-text">TLBC 2025</h1>
-              <p className="text-xs text-muted-foreground">The Lord's Brethren Convocation'25</p>
+              <h1 className="text-xl font-heading font-bold gradient-text">TLBC</h1>
+              <p className="text-xs text-muted-foreground">The Lord's Brethren Church International</p>
             </div>
           </Link>
 
