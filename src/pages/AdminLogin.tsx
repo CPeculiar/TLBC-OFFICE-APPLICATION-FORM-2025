@@ -129,7 +129,7 @@ const AdminLogin = () => {
             Admin Login
           </h1>
           <p className="text-gray-600 text-sm sm:text-base">
-            Login to access TLBC 2025 Admin dashboard
+            Login to access the Admin dashboard
           </p>
         </div>
 
@@ -253,13 +253,6 @@ const AdminLogin = () => {
             </div>
           </CardContent>
         </Card>
-
-        {/* Security Notice */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500">
-            🔒 This is a secure area. All login attempts are monitored.
-          </p>
-        </div>
       </div>
     </div>
   );
