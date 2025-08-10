@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from "react-router-dom";
 import { submitRegistrationForm } from "@/services/firestore";
+import { uploadDocument, validateDocumentFile } from "@/services/storage";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import PageHeader from '@/components/PageHeader';
 import FormCard from '@/components/FormCard';
-import { Loader2, CheckCircle } from 'lucide-react';
+import { Loader2, CheckCircle, Upload, FileText } from 'lucide-react';
 
 const registrationSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -26,6 +27,7 @@ const registrationSchema = z.object({
   achievements: z.string().optional(),
   officeApply: z.string().min(2, 'Office applying for must be at least 2 characters'),
   reasonsApply: z.string().min(2, 'Reasons for applying must be at least 2 characters'),
+  document: z.any().optional(),
 });
 
 type RegistrationFormData = z.infer<typeof registrationSchema>;
@@ -33,6 +35,8 @@ type RegistrationFormData = z.infer<typeof registrationSchema>;
 const Registration = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<string>('');
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -51,6 +55,7 @@ const Registration = () => {
       achievements: '',
       officeApply: '',
       reasonsApply: '',
+      document: null,
     },
   });
 
@@ -76,18 +81,53 @@ const Registration = () => {
     'TLTN Agulu': 'TLTN Agulu', 
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const validation = validateDocumentFile(file);
+      if (!validation.isValid) {
+        toast({
+          title: "Invalid File",
+          description: validation.error,
+          variant: "destructive",
+        });
+        event.target.value = '';
+        setSelectedFile(null);
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true);
+    setUploadProgress('Preparing submission...');
     
     try {
-      const result = await submitRegistrationForm(data);
-        toast({
-          title: "Application submitted Successful!",
-          description: "Thank you for Applying. Blessings!",
-          variant: "success",
-        });
-        setIsSubmitted(true);
-        form.reset();
+      let documentUrl = '';
+      
+      if (selectedFile) {
+        setUploadProgress('Uploading document...');
+        const applicantName = `${data.firstName}_${data.lastName}`;
+        documentUrl = await uploadDocument(selectedFile, applicantName);
+      }
+      
+      setUploadProgress('Saving application...');
+      const submissionData = {
+        ...data,
+        documentUrl: documentUrl || null,
+        documentName: selectedFile?.name || null,
+      };
+      
+      const result = await submitRegistrationForm(submissionData);
+      toast({
+        title: "Application submitted Successful!",
+        description: "Thank you for Applying. Blessings!",
+        variant: "success",
+      });
+      setIsSubmitted(true);
+      form.reset();
+      setSelectedFile(null);
     } catch (error) {
       toast({
         title: "Submission Failed",
@@ -96,6 +136,7 @@ const Registration = () => {
       });
     } finally {
       setIsSubmitting(false);
+      setUploadProgress('');
     }
   };
 
@@ -445,11 +486,65 @@ const Registration = () => {
                     </FormItem>
                   )}
                 />
+              </div>
 
-
-
-
-
+              {/* Document Upload */}
+              <div className="space-y-3 sm:space-y-4">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground break-words">Supporting Document</h3>
+                
+                <div className="w-full">
+                  <label className="text-sm sm:text-base break-words block mb-2">
+                    Upload Letter/Document (Optional)
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 sm:p-6 text-center hover:border-gray-400 transition-colors">
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx,.odt,.txt,.rtf"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="document-upload"
+                    />
+                    <label htmlFor="document-upload" className="cursor-pointer">
+                      <div className="flex flex-col items-center space-y-2">
+                        {selectedFile ? (
+                          <FileText className="w-8 h-8 text-green-500" />
+                        ) : (
+                          <Upload className="w-8 h-8 text-gray-400" />
+                        )}
+                        <div className="text-sm sm:text-base">
+                          {selectedFile ? (
+                            <div>
+                              <p className="text-green-600 font-medium break-all text-center px-2">{selectedFile.name}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                              </p>
+                            </div>
+                          ) : (
+                            <div>
+                              <p className="text-gray-600">Click to upload document</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                PDF, DOC, DOCX, ODT, TXT, RTF (Max 10MB)
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                  {selectedFile && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFile(null);
+                        const input = document.getElementById('document-upload') as HTMLInputElement;
+                        if (input) input.value = '';
+                      }}
+                      className="mt-2 text-sm text-red-600 hover:text-red-800"
+                    >
+                      Remove file
+                    </button>
+                  )}
+                </div>
               </div>
 
 
@@ -463,7 +558,9 @@ const Registration = () => {
                 {isSubmitting ? (
                   <div className="flex items-center justify-center gap-1.5 sm:gap-2 w-full">
                     <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin flex-shrink-0" />
-                    <span className="text-xs sm:text-sm text-center truncate">Registering...</span>
+                    <span className="text-xs sm:text-sm text-center truncate">
+                      {uploadProgress || 'Registering...'}
+                    </span>
                   </div>
                 ) : (
                   <span className="text-sm sm:text-base text-center">Register</span>

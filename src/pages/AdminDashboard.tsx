@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Award, ChevronLeft, ChevronRight, LogOut, User } from 'lucide-react';
+import { Award, ChevronLeft, ChevronRight, LogOut, User, Download as DownloadIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -68,7 +68,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(8);
+  const [itemsPerPage] = useState(6);
   const [loggingOut, setLoggingOut] = useState(false);
   const { toast } = useToast();
   const { currentUser, logout } = useAuth();
@@ -302,6 +302,18 @@ const getTotalPages = (data) => {
             <div className="space-y-1">
               <p className="break-words"><strong>Church:</strong> {registration.church}</p>
               <p className="break-words"><strong>Zone:</strong> {registration.zone}</p>
+              {registration.documentUrl && (
+                <div className="flex items-center gap-2">
+                  <strong>Document:</strong>
+                  <button
+                    onClick={() => window.open(registration.documentUrl, '_blank')}
+                    className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs"
+                  >
+                    <DownloadIcon className="w-3 h-3" />
+                    Download
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           
